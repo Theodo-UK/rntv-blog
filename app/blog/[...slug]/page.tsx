@@ -1,24 +1,44 @@
 import 'css/prism.css'
 import 'katex/dist/katex.css'
 
-import PageTitle from '@/components/PageTitle'
 import { components } from '@/components/MDXComponents'
-import { MDXLayoutRenderer } from 'pliny/mdx-components'
-import { sortPosts, coreContent, allCoreContent } from 'pliny/utils/contentlayer'
-import { allBlogs, allAuthors } from 'contentlayer/generated'
-import type { Authors, Blog } from 'contentlayer/generated'
-import PostSimple from '@/layouts/PostSimple'
-import PostLayout from '@/layouts/PostLayout/PostLayout'
-import PostBanner from '@/layouts/PostBanner'
-import { Metadata } from 'next'
 import siteMetadata from '@/data/siteMetadata'
+import PostBanner from '@/layouts/PostBanner'
+import PostLayout from '@/layouts/PostLayout/PostLayout'
+import PostSimple from '@/layouts/PostSimple'
+import type { Authors, Blog } from 'contentlayer/generated'
+import { allAuthors, allBlogs } from 'contentlayer/generated'
+import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { MDXLayoutRenderer } from 'pliny/mdx-components'
+import { allCoreContent, coreContent, sortPosts } from 'pliny/utils/contentlayer'
 
 const defaultLayout = 'PostLayout'
 const layouts = {
   PostSimple,
   PostLayout,
   PostBanner,
+}
+
+import { headingTree } from '@/layouts/PostLayout/headings'
+import fs from 'fs'
+import matter from 'gray-matter'
+import path from 'path'
+import { remark } from 'remark'
+
+const postsDirectory = path.join(process.cwd(), 'data/blog')
+
+export async function getHeadings(id) {
+  const fullPath = path.join(postsDirectory, `${id}.mdx`)
+  const fileContents = fs.readFileSync(fullPath, 'utf8')
+
+  // Use gray-matter to parse the post metadata section
+  const matterResult = matter(fileContents)
+
+  // Use remark to convert Markdown into HTML string
+  const processedContent = await remark().use(headingTree).process(matterResult.content)
+
+  return processedContent.data.headings
 }
 
 export async function generateMetadata({
@@ -81,6 +101,9 @@ export const generateStaticParams = async () => {
 }
 
 export default async function Page({ params }: { params: { slug: string[] } }) {
+  const checkGeneratedHeadings = await getHeadings(params.slug.join('/'))
+  console.log(checkGeneratedHeadings)
+
   const slug = decodeURI(params.slug.join('/'))
   // Filter out drafts in production
   const sortedCoreContents = allCoreContent(sortPosts(allBlogs))
