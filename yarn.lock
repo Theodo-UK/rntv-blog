@@ -3254,6 +3254,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/mdast@npm:^4.0.0":
+  version: 4.0.3
+  resolution: "@types/mdast@npm:4.0.3"
+  dependencies:
+    "@types/unist": "*"
+  checksum: 345c5a22fccf05f35239ea6313ee4aaf6ebed5927c03ac79744abccb69b9ba5e692f9b771e36a012b79e17429082cada30f579e9c43b8a54e0ffb365431498b6
+  languageName: node
+  linkType: hard
+
 "@types/mdx@npm:^2.0.0, @types/mdx@npm:^2.0.5":
   version: 2.0.10
   resolution: "@types/mdx@npm:2.0.10"
@@ -3334,6 +3343,13 @@ __metadata:
   version: 2.0.7
   resolution: "@types/trusted-types@npm:2.0.7"
   checksum: 8e4202766a65877efcf5d5a41b7dd458480b36195e580a3b1085ad21e948bc417d55d6f8af1fd2a7ad008015d4117d5fdfe432731157da3c68678487174e4ba3
+  languageName: node
+  linkType: hard
+
+"@types/unist@npm:*":
+  version: 3.0.2
+  resolution: "@types/unist@npm:3.0.2"
+  checksum: 3d04d0be69316e5f14599a0d993a208606c12818cf631fd399243d1dc7a9bd8a3917d6066baa6abc290814afbd744621484756803c80cba892c39cd4b4a85616
   languageName: node
   linkType: hard
 
@@ -7800,6 +7816,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mdast-util-to-string@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "mdast-util-to-string@npm:4.0.0"
+  dependencies:
+    "@types/mdast": ^4.0.0
+  checksum: 35489fb5710d58cbc2d6c8b6547df161a3f81e0f28f320dfb3548a9393555daf07c310c0c497708e67ed4dfea4a06e5655799e7d631ca91420c288b4525d6c29
+  languageName: node
+  linkType: hard
+
 "mdn-data@npm:2.0.28":
   version: 2.0.28
   resolution: "mdn-data@npm:2.0.28"
@@ -10962,6 +10987,7 @@ __metadata:
     husky: ^8.0.0
     image-size: 1.0.0
     lint-staged: ^13.0.0
+    mdast-util-to-string: ^4.0.0
     next: 14.0.3
     next-contentlayer: 0.3.4
     next-themes: ^0.2.1
