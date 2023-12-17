@@ -15,6 +15,7 @@ import { NextPost } from './NextPost'
 import { PostAuthors } from './PostAuthors'
 import { PostHeader } from './PostHeader'
 import { PreviousPost } from './PreviousPost'
+import { TableOfContents } from './TableOfContents'
 import { headingTree } from './headings'
 
 const postsDirectory = path.join(process.cwd(), 'posts')
@@ -38,13 +39,21 @@ const discussUrl = (path) =>
 
 interface LayoutProps {
   content: CoreContent<Blog>
+  headings: unknown
   authorDetails: CoreContent<Authors>[]
   next?: { path: string; title: string }
   prev?: { path: string; title: string }
   children: ReactNode
 }
 
-export default function PostLayout({ content, authorDetails, next, prev, children }: LayoutProps) {
+export default function PostLayout({
+  content,
+  headings,
+  authorDetails,
+  next,
+  prev,
+  children,
+}: LayoutProps) {
   const { filePath, path, slug, date, title, tags } = content
   const basePath = path.split('/')[0]
 
@@ -56,7 +65,9 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
           <PostHeader title={title} date={date} locale={siteMetadata.locale} />
           <div className="grid-rows-[auto_1fr] divide-y divide-gray-200 pb-8 dark:divide-gray-700 xl:grid xl:grid-cols-5 xl:gap-x-6 xl:divide-y-0">
             <PostAuthors authorDetails={authorDetails} />
-            <div className="xl:col-start-5 xl:row-start-1">hi this will be my TOC</div>
+            <div className="xl:col-start-5 xl:row-start-1">
+              <TableOfContents nodes={headings} />
+            </div>
             <div className="divide-y divide-gray-200 dark:divide-gray-700 xl:col-span-3 xl:row-span-2 xl:pb-0">
               <div className="prose max-w-none pb-8 pt-10 dark:prose-invert">{children}</div>
               <div className="pb-6 pt-6 text-sm text-gray-700 dark:text-gray-300">
