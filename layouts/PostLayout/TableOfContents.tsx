@@ -14,14 +14,22 @@ export const TableOfContents = ({ nodes }) => {
 }
 
 function renderNodes(nodes) {
+  const indentationLevels = ['ml-4', 'ml-8', 'ml-12', 'ml-16', 'ml-20', 'ml-24']
   return (
     <ul>
-      {nodes.map((node) => (
-        <li key={node.data.hProperties.id}>
-          <a href={`#${node.data.hProperties.id}`}>{node.value}</a>
-          {node.children?.length > 0 && renderNodes(node.children)}
-        </li>
-      ))}
+      {nodes.map((node) => {
+        return (
+          <li key={node.data.hProperties.id}>
+            <a
+              className={`${indentationLevels[node.depth - 1]}`}
+              href={`#${node.data.hProperties.id}`}
+            >
+              {node.value}
+            </a>
+            {node.children?.length > 0 && renderNodes(node.children)}
+          </li>
+        )
+      })}
     </ul>
   )
 }
