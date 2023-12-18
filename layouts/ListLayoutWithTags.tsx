@@ -10,6 +10,7 @@ import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import tagData from 'app/tag-data.json'
+import { useState } from 'react'
 
 interface PaginationProps {
   totalPages: number
@@ -75,6 +76,16 @@ export default function ListLayoutWithTags({
 
   const displayPosts = initialDisplayPosts.length > 0 ? initialDisplayPosts : posts
 
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const handleInputChange = (e) => {
+    setSearchTerm(e.target.value)
+  }
+
+  const filteredTags = sortedTags.filter((item) =>
+    item.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   return (
     <>
       <div>
@@ -96,8 +107,15 @@ export default function ListLayoutWithTags({
                   All Posts
                 </Link>
               )}
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={handleInputChange}
+                className="rounded-md text-black"
+              />
               <ul>
-                {sortedTags.map((t) => {
+                {filteredTags.map((t) => {
                   return (
                     <li key={t} className="my-3">
                       {pathname.split('/tags/')[1] === slug(t) ? (
