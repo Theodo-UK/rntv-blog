@@ -14,7 +14,14 @@ export const TableOfContents = ({ nodes }) => {
 }
 
 function renderNodes(nodes, depth = 0, parentNumbering: number[] = []) {
-  const indentationLevels = ['ml-4', 'ml-8', 'ml-12', 'ml-16', 'ml-20', 'ml-24']
+  const indentationLevels = [
+    'pl-4 -indent-4',
+    'pl-12 -indent-8',
+    'pl-24 -indent-12',
+    'pl-36 -indent-16',
+    'pl-48 -indent-20',
+    'pl-60 -indent-24',
+  ]
 
   return (
     <ul>
@@ -27,8 +34,10 @@ function renderNodes(nodes, depth = 0, parentNumbering: number[] = []) {
 
         return (
           <li key={node.data.hProperties.id}>
-            <a className={`${indentationLevels[depth]}`} href={`#${node.data.hProperties.id}`}>
-              {`${sectionNumber} ${node.value}`}
+            <a href={`#${node.data.hProperties.id}`}>
+              <div className={`${indentationLevels[depth]}`}>
+                {`${sectionNumber} ${node.value}`}
+              </div>
             </a>
             {node.children?.length > 0 && renderNodes(node.children, depth + 1, currentNumber)}
           </li>
