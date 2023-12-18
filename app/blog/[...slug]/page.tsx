@@ -11,34 +11,13 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
 import { allCoreContent, coreContent, sortPosts } from 'pliny/utils/contentlayer'
-
+import { generateArticleMetadata } from './generateArticleMetadata'
+import { getHeadingsFromArticle } from './getHeadingsFromArticle'
 const defaultLayout = 'PostLayout'
 const layouts = {
   PostSimple,
   PostLayout,
   PostBanner,
-}
-
-import { headingTree } from '@/layouts/PostLayout/headings'
-import fs from 'fs'
-import matter from 'gray-matter'
-import path from 'path'
-import { remark } from 'remark'
-import { generateArticleMetadata } from './generateArticleMetadata'
-
-const postsDirectory = path.join(process.cwd(), 'data/blog')
-
-export async function getHeadings(id) {
-  const fullPath = path.join(postsDirectory, `${id}.mdx`)
-  const fileContents = fs.readFileSync(fullPath, 'utf8')
-
-  // Use gray-matter to parse the post metadata section
-  const matterResult = matter(fileContents)
-
-  // Use remark to convert Markdown into HTML string
-  const processedContent = await remark().use(headingTree).process(matterResult.content)
-
-  return processedContent.data.headings
 }
 
 export async function generateMetadata({
@@ -56,8 +35,7 @@ export const generateStaticParams = async () => {
 }
 
 export default async function Page({ params }: { params: { slug: string[] } }) {
-  const checkGeneratedHeadings = await getHeadings(params.slug.join('/'))
-  console.log(checkGeneratedHeadings)
+  const checkGeneratedHeadings = await getHeadingsFromArticle(params.slug.join('/'))
 
   const slug = decodeURI(params.slug.join('/'))
   // Filter out drafts in production
