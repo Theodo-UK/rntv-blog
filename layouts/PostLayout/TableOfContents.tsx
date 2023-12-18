@@ -6,8 +6,8 @@ export const TableOfContents = ({ nodes }) => {
   }
 
   return (
-    <div className={'toc'}>
-      <h3 className={'secondary-text'}>Table of contents</h3>
+    <div className={'toc p-2'}>
+      <h3 className={'font-bold underline'}>Table of Contents</h3>
       {renderNodes(nodes)}
     </div>
   )
