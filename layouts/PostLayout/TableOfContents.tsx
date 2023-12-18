@@ -13,20 +13,24 @@ export const TableOfContents = ({ nodes }) => {
   )
 }
 
-function renderNodes(nodes) {
+function renderNodes(nodes, depth = 0, parentNumbering: number[] = []) {
   const indentationLevels = ['ml-4', 'ml-8', 'ml-12', 'ml-16', 'ml-20', 'ml-24']
+
   return (
     <ul>
-      {nodes.map((node) => {
+      {nodes.map((node, index) => {
+        if (node.depth > 4) {
+          return
+        }
+        const currentNumber = depth === 0 ? [index + 1] : [...parentNumbering, index + 1]
+        const sectionNumber = currentNumber.join('.')
+
         return (
           <li key={node.data.hProperties.id}>
-            <a
-              className={`${indentationLevels[node.depth - 1]}`}
-              href={`#${node.data.hProperties.id}`}
-            >
-              {node.value}
+            <a className={`${indentationLevels[depth]}`} href={`#${node.data.hProperties.id}`}>
+              {`${sectionNumber} ${node.value}`}
             </a>
-            {node.children?.length > 0 && renderNodes(node.children)}
+            {node.children?.length > 0 && renderNodes(node.children, depth + 1, currentNumber)}
           </li>
         )
       })}
