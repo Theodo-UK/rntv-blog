@@ -5,33 +5,13 @@ import SectionContainer from '@/components/SectionContainer'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import type { Authors, Blog } from 'contentlayer/generated'
-import fs from 'fs'
-import matter from 'gray-matter'
-import path from 'path'
 import { CoreContent } from 'pliny/utils/contentlayer'
 import { ReactNode } from 'react'
-import { remark } from 'remark'
 import { NextPost } from './NextPost'
 import { PostAuthors } from './PostAuthors'
 import { PostHeader } from './PostHeader'
 import { PreviousPost } from './PreviousPost'
 import { TableOfContents } from './TableOfContents'
-import { headingTree } from './headings'
-
-const postsDirectory = path.join(process.cwd(), 'posts')
-
-export async function getHeadings(id) {
-  const fullPath = path.join(postsDirectory, `${id}.mdx`)
-  const fileContents = fs.readFileSync(fullPath, 'utf8')
-
-  // Use gray-matter to parse the post metadata section
-  const matterResult = matter(fileContents)
-
-  // Use remark to convert Markdown into HTML string
-  const processedContent = await remark().use(headingTree).process(matterResult.content)
-
-  return processedContent.data.headings
-}
 
 const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
 const discussUrl = (path) =>
