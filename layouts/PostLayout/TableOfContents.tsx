@@ -1,5 +1,7 @@
 'use client'
 
+import { TableOfContentsLink } from './TableOfContentsLink'
+
 export const TableOfContents = ({ nodes }) => {
   if (!nodes?.length) {
     return null
@@ -14,15 +16,6 @@ export const TableOfContents = ({ nodes }) => {
 }
 
 function renderNodes(nodes, depth = 0, parentNumbering: number[] = []) {
-  const indentationLevels = [
-    'pl-4 -indent-4',
-    'pl-12 -indent-8',
-    'pl-24 -indent-12',
-    'pl-36 -indent-16',
-    'pl-48 -indent-20',
-    'pl-60 -indent-24',
-  ]
-
   return (
     <ul>
       {nodes.map((node, index) => {
@@ -34,11 +27,7 @@ function renderNodes(nodes, depth = 0, parentNumbering: number[] = []) {
 
         return (
           <li key={node.data.hProperties.id}>
-            <a href={`#${node.data.hProperties.id}`}>
-              <div className={`${indentationLevels[depth]}`}>
-                {`${sectionNumber} ${node.value}`}
-              </div>
-            </a>
+            <TableOfContentsLink node={node} depth={depth} sectionNumber={sectionNumber} />
             {node.children?.length > 0 && renderNodes(node.children, depth + 1, currentNumber)}
           </li>
         )
