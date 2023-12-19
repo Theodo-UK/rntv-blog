@@ -12,7 +12,7 @@ import { notFound } from 'next/navigation'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
 import { allCoreContent, coreContent, sortPosts } from 'pliny/utils/contentlayer'
 import { generateArticleMetadata } from './generateArticleMetadata'
-import { getHeadingsFromArticle } from './getHeadingsFromArticle'
+import { getHeadingsTreeFromArticle } from './getHeadingsTreeFromArticle'
 const defaultLayout = 'PostLayout'
 const layouts = {
   PostSimple,
@@ -35,7 +35,7 @@ export const generateStaticParams = async () => {
 }
 
 export default async function Page({ params }: { params: { slug: string[] } }) {
-  const checkGeneratedHeadings = await getHeadingsFromArticle(params.slug.join('/'))
+  const checkGeneratedHeadings = await getHeadingsTreeFromArticle(params.slug.join('/'))
 
   const slug = decodeURI(params.slug.join('/'))
   // Filter out drafts in production

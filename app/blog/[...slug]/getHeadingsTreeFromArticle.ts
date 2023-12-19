@@ -1,4 +1,4 @@
-import { headingTree } from '@/layouts/PostLayout/headings'
+import { markdownAstRemarkPlugin } from '@/layouts/PostLayout/markdownAstRemarkPlugin'
 import 'css/prism.css'
 import fs from 'fs'
 import matter from 'gray-matter'
@@ -8,14 +8,13 @@ import { remark } from 'remark'
 
 const postsDirectory = path.join(process.cwd(), 'data/blog')
 
-export async function getHeadingsFromArticle(id) {
+export async function getHeadingsTreeFromArticle(id) {
   const fullPath = path.join(postsDirectory, `${id}.mdx`)
   const fileContents = fs.readFileSync(fullPath, 'utf8')
 
   const articleData = getArticleDataFromFile(fileContents)
-
-  const processedContent = await processHeadingsFromArticleData(articleData)
-
+  const markdown = articleData.content
+  const processedContent = await convertMarkdownToVFile(markdown)
   return processedContent.data.headings
 }
 
@@ -23,6 +22,6 @@ function getArticleDataFromFile(fileContents) {
   return matter(fileContents)
 }
 
-async function processHeadingsFromArticleData(articleData) {
-  return await remark().use(headingTree).process(articleData.content)
+async function convertMarkdownToVFile(markdown) {
+  return await remark().use(markdownAstRemarkPlugin).process(markdown)
 }
