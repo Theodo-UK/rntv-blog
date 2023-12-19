@@ -1,7 +1,8 @@
 'use client'
+
 import { useEffect, useRef, useState } from 'react'
 
-function useHighlighted(id) {
+export function useActiveSection(id) {
   const observer = useRef()
   const [activeId, setActiveId] = useState('')
 
@@ -31,31 +32,4 @@ function useHighlighted(id) {
   }, [])
 
   return { isActiveId: activeId === id, setActiveId }
-}
-
-export const TableOfContentsLink = ({ node, depth, sectionNumber }) => {
-  const indentationLevels = [
-    'pl-4 -indent-4',
-    'pl-12 -indent-8',
-    'pl-24 -indent-12',
-    'pl-36 -indent-16',
-    'pl-48 -indent-20',
-    'pl-60 -indent-24',
-  ]
-  const id = node.data.hProperties.id
-
-  const { isActiveId } = useHighlighted(id)
-  return (
-    <a
-      href={`#${id}`}
-      //   onClick={(e) => {
-      //     e.preventDefault()
-      //     setActiveId(id)
-      //   }}
-    >
-      <div
-        className={`${isActiveId && 'text-blue-400'} ${indentationLevels[depth]}`}
-      >{`${sectionNumber} ${node.value}`}</div>
-    </a>
-  )
 }
