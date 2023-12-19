@@ -11,7 +11,7 @@ import { NextPost } from './NextPost'
 import { PostAuthors } from './PostAuthors'
 import { PostHeader } from './PostHeader'
 import { PreviousPost } from './PreviousPost'
-import { TableOfContents } from './TableOfContents'
+import { TableOfContents } from './TableOfContents/TableOfContents'
 
 const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
 const discussUrl = (path) =>
