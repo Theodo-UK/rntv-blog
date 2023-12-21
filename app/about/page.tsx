@@ -21,7 +21,7 @@ export default function Page() {
         <div className="space-y-2 pb-8 pt-6 md:space-y-5">
           <p>
             Our vision at ReactNativeTV.com is to be the premier destination for everything React
-            Native in the world of television. We aim to centralize and simplify learning, offering
+            Native in the world of television. We aim to centralise and simplify learning, offering
             an extensive repository of resources, tutorials, and insights. Our goal is to empower
             developers of all levels to harness the full potential of React Native in creating
             innovative TV applications, bridging the gap between traditional TV experiences and

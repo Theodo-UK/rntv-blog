@@ -18,4 +18,4 @@ You can add your author details to the `data/authors` directory. The file name i
       The witch knew that using words of power effectively without understanding them required innate power, so she endeavored to teach him what little she knew. After learning more from her, he was able to call animals to him. Particularly, he was seen in the company of wild sparrowhawks so often that his "use name" became Sparrowhawk.
       ```
 
-Add your author avatar to `public/static/images/authors/your-name-avatar.jpg`.
+After adding your author details, you can add your author avatar to `public/static/images/authors/your-name-avatar.jpg`.

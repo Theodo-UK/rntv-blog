@@ -14,10 +14,6 @@
 6. Open a PR and wait for approval from one of our editors
 7. Once approved, your article will be published to [reactnativetv.com](https://reactnativetv.com)!
 
-<!-- ## Support
-
-If you would like to support the maintenance and curation of reactnativetv.com, please consider  -->
-
 ## Licence
 This blog was created from the [tailwind-nextjs-starter-blog](https://github.com/timlrx/tailwind-nextjs-starter-blog/wiki)
 
