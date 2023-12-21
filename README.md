@@ -4,7 +4,7 @@
 - [rntv.app](https://rntv.app)
 - [rntv.dev](https://rntv.dev)
 
-## Quick Start Guide for Submitting an Article to reactnatvetv.com
+## Submitting an Article to reactnativetv.com
 
 1. Clone the repo
 2. Create a new branch
