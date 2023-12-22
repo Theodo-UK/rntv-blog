@@ -1,8 +1,8 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: 'Next.js Starter Blog',
-  author: 'Tails Azimuth',
-  headerTitle: 'TailwindBlog',
+  title: 'React Native TV Blog',
+  author: 'Theodo UK',
+  headerTitle: 'React Native TV',
   description: 'Building Cutting-Edge TV Apps with React Native',
   language: 'en-us',
   theme: 'system', // system, dark or light
