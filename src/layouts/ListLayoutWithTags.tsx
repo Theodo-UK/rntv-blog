@@ -107,13 +107,13 @@ export default function ListLayoutWithTags({
                   All Posts
                 </Link>
               )}
-              <input
+              {/* <input
                 type="text"
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={handleInputChange}
                 className="rounded-md text-black"
-              />
+              /> */}
               <ul>
                 {filteredTags.map((t) => {
                   return (
