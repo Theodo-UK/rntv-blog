@@ -5,10 +5,10 @@ import siteMetadata from '@/data/siteMetadata'
 import { Metadata } from 'next'
 import { Space_Grotesk } from 'next/font/google'
 import { Analytics, AnalyticsConfig } from 'pliny/analytics'
-import { SearchConfig, SearchProvider } from 'pliny/search'
 import Footer from 'src/components/Footer'
 import Header from 'src/components/Header'
 import SectionContainer from 'src/components/SectionContainer'
+import { SearchProvider } from 'src/features/search/SearchProvider'
 import { ThemeProviders } from './theme-providers'
 
 const space_grotesk = Space_Grotesk({
@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
           <SectionContainer>
             <div className="flex h-screen flex-col justify-between font-sans">
-              <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
+              <SearchProvider>
                 <Header />
                 <main className="mb-auto">{children}</main>
               </SearchProvider>
