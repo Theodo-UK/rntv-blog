@@ -37,16 +37,12 @@ export const SearchProvider = ({ children }) => {
 
             return {
               id: post.path,
-              name: 'hi',
-              keywords: 'one two three four five six seven',
               subtitle: `${post.date} | ${post.authors?.join(', ')} | ${post.tags.join(', ')}`,
               perform: () => router.push(post.path),
-              //   name: post.title,
-              //   keywords: `${post.authors?.join(' ') ?? ''}}`,
-              //   keywords: 'ab cd ef gh ij kl mn op qr st uv wx yz',
-              //   keywords: `sss ${post?.summary ?? ''} ${post?.tags?.join(' ') ?? ''} ${
-              //     post.date ?? ''
-              //   } ${post.authors?.join(' ') ?? ''}`,
+              name: post.title,
+              keywords: `${post?.summary ?? ''} ${post?.tags?.join(',') ?? ''} ${post.date ?? ''} ${
+                post.authors?.join(',') ?? ''
+              }`,
               //   section: 'I am a section',
               // shortcut: ['i', 'am', 'a', 'shortcut'],
               // icon: 'https://www.google.com/favicon.ico',
