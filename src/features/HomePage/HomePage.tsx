@@ -1,5 +1,4 @@
 import siteMetadata from '@/data/siteMetadata'
-import NewsletterForm from 'pliny/ui/NewsletterForm'
 import { formatDate } from 'pliny/utils/formatDate'
 import Link from 'src/components/Link'
 import Tag from 'src/components/Tag'
@@ -74,11 +73,6 @@ export const HomePage = ({ posts }) => {
           >
             All Posts &rarr;
           </Link>
-        </div>
-      )}
-      {siteMetadata.newsletter?.provider && (
-        <div className="flex items-center justify-center pt-4">
-          <NewsletterForm />
         </div>
       )}
     </>

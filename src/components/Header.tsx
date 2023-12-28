@@ -12,9 +12,17 @@ const Header = () => {
       <div>
         <Link href="/" aria-label={siteMetadata.headerTitle}>
           <div className="flex items-center justify-between">
-            <div className="mr-3">
+            <div className="mr-3 ">
               <Image
-                src="/static/images/logo.png"
+                className="dark:hidden"
+                src="/static/images/rntv_logo_black.png"
+                alt="React Native TV Logo"
+                height={48}
+                width={48}
+              />
+              <Image
+                className="hidden dark:block"
+                src="/static/images/rntv_logo_white.png"
                 alt="React Native TV Logo"
                 height={48}
                 width={48}
