@@ -43,7 +43,7 @@ export const SearchProvider = ({ children }) => {
               keywords: `${post?.summary ?? ''} ${post?.tags?.join(',') ?? ''} ${post.date ?? ''} ${
                 post.authors?.join(',') ?? ''
               }`,
-              //   section: 'I am a section',
+              section: 'Articles',
               // shortcut: ['i', 'am', 'a', 'shortcut'],
               // icon: 'https://www.google.com/favicon.ico',
               // priority: 1,

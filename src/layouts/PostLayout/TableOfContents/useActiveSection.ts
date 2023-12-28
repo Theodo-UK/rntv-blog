@@ -14,7 +14,6 @@ export function useActiveSection(id) {
             return
           }
           setActiveId(entry.target.id)
-          console.log(`entry.target.id: ${entry.target.id}`)
         }
       })
     }
