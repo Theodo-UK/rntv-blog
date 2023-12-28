@@ -21,7 +21,7 @@ export default function Footer() {
           <div>{` • `}</div>
           <Link href="/">{siteMetadata.title}</Link>
         </div>
-        <div className="mb-8 text-sm text-gray-500 dark:text-gray-400">
+        <div className="mb-8 text-sm text-gray-500 underline dark:text-gray-400">
           <Link href="https://github.com/Theodo-UK/rntv-blog?tab=readme-ov-file#submitting-an-article-to-reactnativetvcom">
             Submit an article
           </Link>
