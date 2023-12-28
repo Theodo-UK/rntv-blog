@@ -1,19 +1,9 @@
 const projectsData = [
   {
-    title: 'A Search Engine',
-    description: `What if you could look up any information in the world? Webpages, images, videos
-    and more. Google has many features to help you find exactly what you're looking
-    for.`,
-    imgSrc: '/static/images/google.png',
-    href: 'https://www.google.com',
-  },
-  {
-    title: 'The Time Machine',
-    description: `Imagine being able to travel back in time or to the future. Simple turn the knob
-    to the desired date and press "Go". No more worrying about lost keys or
-    forgotten headphones with this simple yet affordable solution.`,
-    imgSrc: '/static/images/time-machine.jpg',
-    href: '/blog/the-time-machine',
+    title: 'Build Netflix Ui For TV App',
+    description: `Ever wanted to build a Netflix clone? Well, here's your chance! This is a step by step tutorial on how to build a Netflix clone React Native for TV. Let's get started!`,
+    imgSrc: '/static/images/netflix_logo.jpeg',
+    href: 'https://www.youtube.com/watch?v=9Jr-2B4B_3Y',
   },
 ]
 
