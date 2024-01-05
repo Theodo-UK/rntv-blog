@@ -1,0 +1,135 @@
+---
+title: 'Getting started with React Native TV'
+date: '2024-01-02'
+authors: ['justin_kek', 'default']
+tags: ['react native', 'tv apps']
+draft: false
+summary: Getting started with developing TV Apps using React Native
+---
+
+## Introduction
+
+<ImageAtom src="/static/blog/getting-started-with-react-native-tv/create_rn_androidtv.png" caption="React Native for TV Apps"/>
+
+### What are TV Apps? 
+
+TV apps are applications designed for use on television screens. Unlike traditional mobile or web applications, TV apps are built with the TV UX in mind, where the user typically interacts from a distance using a remote control rather than a touchscreen or keyboard.
+
+These apps are capable of more than just streaming content. TV apps can range from games to educational platforms and social media applications, providing entertainment, information, and interactive capabilities directly from the comfort of your couch. Some examples of popular TV apps include Netflix, YouTube, and Twitch.
+
+### TV Platforms
+
+<ImageAtom src="/static/blog/getting-started-with-react-native-tv/tv_platforms_statista.png" caption="Market share of TV platforms"/>
+
+There are numerous platforms for developing TV apps, so we will start with tvOS and Android TV. Building for tvOS and Android TV will provide your app with a foundation to extend it to other platforms like FireOS, Tizen and WebOS. 
+
+#### What are tvOS and Android TV?
+
+tvOS: Developed by Apple, tvOS is the operating system used for the Apple TV. It's a variant of iOS but optimised for a TV's interface and remote control navigation. tvOS supports high-quality graphics and smooth animations, making it ideal for creating visually appealing and responsive applications.
+
+Android TV: As a part of the Android ecosystem, Android TV is Google's platform for smart TVs and streaming devices. It supports a wide range of apps available on the Google Play Store and offers the flexibility of Android's open-source nature, making it a popular choice for developers looking to reach a broader audience.
+
+### Why React Native for TV Development?
+
+React Native emerges as a strong contender for developing TV apps due to its cross-platform capabilities and efficient development process. It allows developers to use the same codebase for both tvOS and Android TV, significantly reducing development time and resources. This uniformity in code also eases maintenance and updates across platforms. Finally, React Native's large community and extensive library of pre-built components make it a go-to choice for developers looking to create high-quality, engaging TV applications.
+
+## Getting started
+
+### Set up a React Native TV app with Expo's CLI
+There are a few ways you can get started with developing a React Native TV app:
+
+- Creating a React Native TV App with Expo's CLI
+- Creating a React Native + Expo SDK TV App
+- Creating a React Native TV App by cloning an example repository
+
+The most reliable way to get started at the moment is to use Expo's CLI, as the other two approaches come with their own set of issues which you can read about [below](#other-recommendations).
+
+To create a React Native TV App with Expo's CLI, you can follow the instructions [here](https://github.com/react-native-tvos/react-native-tvos?tab=readme-ov-file#new-project-creation-using-the-expo-cli), which essentially involves the following steps:
+
+1. Ensure you have an Apple tvOS simulator running on your machine
+2. Ensure you have an Android TV simulator running on your machine
+3. Create the React Native TV App with Expo's CLI: `yarn create react-native-app TestApp --template https://github.com/react-native-tvos/react-native-template-typescript-tv/tree/tv-release-0.73.0 --template-path template`
+4. Build and start the app in the tvOS simulator: `npx expo run:ios --scheme MyApp-tvOS --device "Apple TV"`
+5. Build and start the app in the Android TV simulator: `npx expo run:android`
+
+You should then see the following screens on your simulators!
+
+<ImageAtom src={
+    ["/static/blog/getting-started-with-react-native-tv/create_rn_tvos.png",
+    "/static/blog/getting-started-with-react-native-tv/create_rn_androidtv.png"]
+    } caption="Example of problem with spatial navigation"/>
+
+### Setting up spatial navigation
+
+One thing that you will probably require regardless of what type of TV app you are building is spatial navigation.
+
+Spatial navigation in TV apps is the approach to navigating with arrow keys on a remote control as opposed to a mouse or touchscreen. It is a non-trivial problem to solve because it requires you to keep track of the current focused element, and the next element to focus on when the user presses an arrow key.
+
+<ImageAtom src="/static/blog/getting-started-with-react-native-tv/tv_navigation_problem.png" caption="Example of problem with spatial navigation"/>
+
+There are a few packages available to address this problem, such as [react-tv-space-navigation](https://github.com/bamlab/react-tv-space-navigation) by BAM Mobile, or [react-tv-navigation](https://github.com/react-tv/react-tv-navigation) which implements the approach Netflix takes.
+
+I would recommend [react-tv-space-navigation](https://github.com/bamlab/react-tv-space-navigation) because it seems to be more actively maintained, and it also has a [demo app](https://bamlab.github.io/react-tv-space-navigation/). You can check out the [example project](https://github.com/bamlab/react-tv-space-navigation/tree/main/packages/example) provided, or follow the steps below to set it up in your project in their [tutorial](https://github.com/bamlab/react-tv-space-navigation/blob/main/docs/tutorial.md).
+
+### Setting up a video player
+
+The next thing you might need is a video player since it is highly likely that your user is on the TV App to watch something. There are a few options available:
+
+- [react-native-video](https://github.com/react-native-video/react-native-video)
+- [react-native-video-player](https://github.com/cornedor/react-native-video-player)
+- [react-native-video-controls](https://github.com/itsnubix/react-native-video-controls)
+
+I would recommend using react-native-video since react-native-video-player is no longer actively maintained and react-native-video-controls is just a wrapper around react-native-video. 
+
+You can follow the official documentation for getting set up on Android and tvOS [here](https://react-native-video.github.io/react-native-video/installation).
+Behind the Scenes of React Native TV Apps
+
+Understanding how React Native TV Apps are built under the hood can be helpful when debugging and optimising your app.
+
+In react-native-tvos, for both tvOS and Android TV,
+1. Development is done in JavaScript / React Native
+2. The JavaScript code is bundled into a single file using Metro
+3. The bundle gets executed on the native layer using a JavaScript engine (currently using Hermes for both tvOS/Android TV instead of JavaScriptCore/V8)
+4. The bundle communicates with native components through the React Native Bridge (new RN Fabric architecture is not fully supported for some tvOS components yet)
+
+This is similar to how React Native apps are built for iOS and Android.
+
+## Other Recommendations
+Third-party example repositories may not work
+
+I tried the two most popular example repositories for React Native TV apps, but they didn't work. This is likely because there are not as many people developing TV apps with react native, so the example repositories are not as well maintained.
+
+For example, I tried to get dev-seb/react-native-tv-demo working but it seems to be outdated (last commit in 2021) and I ran into the following error: `Package "react-native-web" refers to a non-existing file`. I tried to fix this by installing `git@github.com:dev-seb/react-native-web.git` but realised it was > 500 commits behind the main repo, so I decided to a more updated approach.
+
+I also tried to get `wouterds/react-native-tv-example` working and managed to get it running on Android, but not on tvOS. I ran into the following error: `compilation failure in the 'RCT-Folly-tvOS' target`. This is likely due to some unsupported Pod dependency, and I also realised that the react native version was on `react-native-tvos@0.69.8-2`, which is over a year old.
+
+Consequently, I realised that the best approach to getting started with React Native TV development is to follow the official documentation and create a new project from scratch. However, example repositories can still provide some useful insights into how to structure your project, and what dependencies to use - so I'll be referring to them later on in this guide.
+
+### Creating a React Native + Expo SDK TV App may not work
+Unlike the method described [above](#set-up-a-react-native-tv-app-with-expos-cli), which sets up a React Native TV app using Expo's CLI (`create-react-native-app`), you can also create an Expo (React Native + Expo SDK) TV App by running `create-expo-app` as described [here](https://github.com/expo/examples/tree/master/with-tv).
+
+The main difference between these two approaches is that the Expo SDK includes additional features like OTA updates or [Expo Video](https://docs.expo.dev/versions/latest/sdk/video/). 
+
+I managed to get the app running on tvOS but had issues with Android TV - during the build process, when `> Task :expo-modules-core:buildCMakeDebug[arm64-v8a]` was running, I ran into the following error: `fatal error: 'boost/preprocessor/control/expr_iif.hpp' file not found`.
+
+This might be because it create-expo-app -e with-tv is still experimental, and not fully supported yet. There are open issues on [expo](https://github.com/expo/expo/issues/26223) and [react-native-tvos](https://github.com/react-native-tvos/react-native-tvos/issues/632) repos, but no clear solution yet.
+
+### Developing performant TV apps is important
+
+Smart TVs typically do not have as much processing power or memory as smartphones or computers, so it is important to develop performant TV apps. You should always test your app against the lowest-spec TV device you are targeting, and ensure that it runs smoothly.
+
+## Conclusion
+
+In this article, we covered:
+
+- The steps to get started with developing a React Native TV app
+- Common functionalities you might need (spatial navigation, video players)
+- How React Native TV apps are built under the hood, and
+- Some other recommendations
+
+With regards to support for other platforms,
+- FireOS is a layer on top of Android TV, so your app should work there as well, and
+- Support for Tizen & WebOS can be implemented with `react-native-web`
+
+I hope this article has been helpful for you, and that you are now ready to start building your TV app with React Native! Please feel free to reach out or leave a comment if you have any questions or feedback.
+
