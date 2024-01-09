@@ -4,7 +4,7 @@ import Image from 'next/image'
 export const Headline = () => {
   return (
     <div className="space-y-2 pb-4 pt-6 md:space-y-5">
-      <div className="grid grid-cols-1 justify-items-end gap-4 sm:grid-cols-2 sm:grid-rows-1 ">
+      <div className="grid grid-cols-1 items-center justify-items-end gap-4 sm:grid-cols-2 sm:grid-rows-1 ">
         <Image
           className="row-start-1 rounded sm:col-start-2"
           src="/static/images/react-native-tv.webp"
