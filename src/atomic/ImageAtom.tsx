@@ -32,7 +32,7 @@ const ImageAtom = ({ src, altText, caption, source }: Props) => {
         alt={altText ?? caption ?? ''}
         height={500}
         width={500}
-        style={{ width: '100%', height: '100%', position: 'relative' }}
+        style={{ width: '100%', height: '100%', position: 'relative', borderRadius: '0.25rem' }}
       />
       {showCaption && (
         <figcaption style={{ textAlign: 'center', fontSize: 'smaller' }}>

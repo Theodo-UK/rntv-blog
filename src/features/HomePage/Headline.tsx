@@ -14,7 +14,7 @@ export const Headline = () => {
           </p>
         </div>
         <Image
-          className="row-start-1 sm:col-start-2 sm:row-start-1"
+          className="row-start-1 rounded sm:col-start-2 sm:row-start-1"
           src="/static/images/react-native-tv.webp"
           alt="React Native TV"
           width={500}
