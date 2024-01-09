@@ -23,7 +23,7 @@ export const PostAuthors = ({ authorDetails }: Props) => {
                   className="h-10 w-10 rounded-full"
                 />
               )}
-              <dl className="whitespace-nowrap text-sm font-medium leading-5">
+              <dl className="text-sm font-medium leading-5">
                 <dt className="sr-only">Name</dt>
                 <dd className="text-gray-900 dark:text-gray-100">{author.name}</dd>
                 <AuthorLinkedIn author={author} />
