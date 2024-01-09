@@ -15,6 +15,4 @@
 7. Once approved, your article will be published to [reactnativetv.com](https://reactnativetv.com)!
 
 ## Licence
-This blog was created from the [tailwind-nextjs-starter-blog](https://github.com/timlrx/tailwind-nextjs-starter-blog/wiki)
-
-[MIT](https://github.com/timlrx/tailwind-nextjs-starter-blog/blob/main/LICENSE) © [Timothy Lin](https://www.timlrx.com)
+This blog was created from the [tailwind-nextjs-starter-blog](https://github.com/timlrx/tailwind-nextjs-starter-blog)

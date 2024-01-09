@@ -21,6 +21,7 @@ export const TwoImagesInARowAtom = ({ src, altText, caption, source, showCaption
             marginRight: '3px',
             height: '100%',
             position: 'relative',
+            borderRadius: '0.25rem',
           }}
         />
         <Image
@@ -33,6 +34,7 @@ export const TwoImagesInARowAtom = ({ src, altText, caption, source, showCaption
             marginLeft: '3px',
             height: '100%',
             position: 'relative',
+            borderRadius: '0.25rem',
           }}
         />
       </div>

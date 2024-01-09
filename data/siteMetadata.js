@@ -3,7 +3,8 @@ const siteMetadata = {
   title: 'React Native TV Blog',
   author: 'Theodo UK',
   headerTitle: 'React Native TV',
-  description: 'Building Cutting-Edge TV Apps with React Native',
+  description:
+    'An online knowledge base for how to use React Native on TV to get the best out of cross-platform React',
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://tailwind-nextjs-starter-blog.vercel.app',
