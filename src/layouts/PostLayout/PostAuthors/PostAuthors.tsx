@@ -2,6 +2,7 @@ import type { Authors } from 'contentlayer/generated'
 import Image from 'next/image'
 import { CoreContent } from 'pliny/utils/contentlayer'
 import { AuthorLinkedIn } from './AuthorLinkedIn'
+import { AuthorOccupation } from './AuthorOccupation'
 type Props = {
   authorDetails: CoreContent<Authors>[]
 }
@@ -26,6 +27,7 @@ export const PostAuthors = ({ authorDetails }: Props) => {
                 <dt className="sr-only">Name</dt>
                 <dd className="text-gray-900 dark:text-gray-100">{author.name}</dd>
                 <AuthorLinkedIn author={author} />
+                <AuthorOccupation author={author} />
               </dl>
             </li>
           ))}
