@@ -71,6 +71,10 @@ module.exports = () => {
           protocol: 'https',
           hostname: 'picsum.photos',
         },
+        {
+          protocol: 'http',
+          hostname: 'img.youtube.com',
+        },
       ],
     },
     async headers() {
