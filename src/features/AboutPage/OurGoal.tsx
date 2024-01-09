@@ -9,12 +9,11 @@ export const OurGoal = () => {
       <div className="space-y-2 pb-8 pt-6 md:space-y-5">
         <p>
           Our goal is to create a consolidative knowledge base for developers who are interested in
-          venturing into the realm of building TV apps, particularly those based on React Native
-          (RN).
+          venturing into the realm of building TV apps, particularly those based on React Native.
         </p>
         <p>
           Currently, there exists a noticeable gap in readily available information in this
-          specialised area, making it an underloved part of the RN ecosystem.
+          specialised area, making it an underloved part of the React Native ecosystem.
         </p>
         <p>
           We recognise this lack and aim to fill it by establishing a centralised hub where people
