@@ -17,9 +17,11 @@ export const Editors = ({ authorsList }: Props) => {
       <div className="space-y-2 divide-y pb-8 pt-6 md:space-y-5">
         {authorsList.map((author) => {
           return (
-            <AuthorLayout key={author._id} content={coreContent(author)}>
-              <MDXLayoutRenderer code={author.body.code} />
-            </AuthorLayout>
+            <div key={author._id} className="p-2">
+              <AuthorLayout content={coreContent(author)}>
+                <MDXLayoutRenderer code={author.body.code} />
+              </AuthorLayout>
+            </div>
           )
         })}
       </div>
