@@ -1,7 +1,7 @@
 import type { Authors } from 'contentlayer/generated'
 import Image from 'next/image'
-import Link from 'next/link'
 import { CoreContent } from 'pliny/utils/contentlayer'
+import { AuthorLinkedIn } from './AuthorLinkedIn'
 type Props = {
   authorDetails: CoreContent<Authors>[]
 }
@@ -25,17 +25,7 @@ export const PostAuthors = ({ authorDetails }: Props) => {
               <dl className="whitespace-nowrap text-sm font-medium leading-5">
                 <dt className="sr-only">Name</dt>
                 <dd className="text-gray-900 dark:text-gray-100">{author.name}</dd>
-                <dt className="sr-only">LinkedIn</dt>
-                <dd>
-                  {author.linkedin && (
-                    <Link
-                      href={author.linkedin}
-                      className="text-xs text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
-                    >
-                      {author.linkedin.replace('https://www.linkedin.com/in/', '@')}
-                    </Link>
-                  )}
-                </dd>
+                <AuthorLinkedIn author={author} />
               </dl>
             </li>
           ))}
