@@ -1,0 +1,194 @@
+---
+title: 'Remote controls for React TV apps: a declarative approach with react-tv-space-navigation 1.0!'
+date: '2023-10-23'
+authors: ['pierrep']
+tags: ['react native', 'tv apps', 'spatial navigation']
+draft: false
+summary: A declarative approach to solve the navigation problem
+---
+
+![Banner](/static/blog/a-declarative-approach-to-rn-space-navigation/banner.png)
+
+# Developing a cross-platform TV app with React Native
+
+TV apps are more and more popular. And there are many different platforms: AndroidTV, AppleTV, and web. Each of these platforms has its own operating system and unique implementation APIs. The user experience also varies slightly across platforms due to the different types of remote control each utilizes.
+
+React Native is a really good candidate to solve this challenge. It is an amazing solution for rendering mobile and web apps already. And it is just as amazing for TV apps!
+
+# The Spatial Navigation Problem
+
+One of the hardest challenges we had to solve while building a cross-platform TV app was the spatial navigation. Which component should be focused when I press right, down, right? It is not trivial.
+
+![Demo video](/static/blog/a-declarative-approach-to-rn-space-navigation/demo.mp4)
+
+> Wikipedia : *In computing, **spatial navigation** is the ability to navigate between focusable elements, such as hyperlinks and form controls, **within a structured document or user interface** **according to the spatial location.***
+>
+
+There are many solutions to this problem. There is now a native solution for both AndroidTV and tvOS that was upstreamed in https://github.com/react-native-tvos/react-native-tvos (many thanks to the contributors who did that). But it won’t work on the web. On the other hand, Norigin developed its own navigation system for the web with https://github.com/NoriginMedia/Norigin-Spatial-Navigation, but it does not work well on native apps.
+
+We identified two ways of handling the spatial navigation: pixel-based navigation and declaration-based navigation.
+
+### Pixel-based navigation
+
+Pixel-based navigation relies on visual layout of focusable elements. To determine the next element to focus, it compares distances to the nearest elements in the desired direction.
+
+- Pros: no additional code is needed to handle spatial navigation. The navigation between rendered elements works out-of-the-box.
+- Cons: it’s **not very flexible**. If your layout isn’t perfect (items of same sizes and regularly spaced), you might encounter strange movement behaviours.
+Also, **implementation greatly depends on the platform**: computing the position of an element on screen for a web browser or for Android is not the same.
+
+![Pixel-based navigation example](/static/blog/a-declarative-approach-to-rn-space-navigation/pixel-based.png)
+
+### Declaration-based navigation
+
+Declaration-based navigation relies on a structured declaration of spatial positions: we manually indicate that an element is above another using section-like parent navigation nodes, and the React rendering order.
+
+- Pros: it’s fully flexible. Even if two elements are not perfectly aligned, you can easily set the movement behaviour using the rendering order or including elements inside the same navigation node.
+- Cons: **you could declare positions that do not make sense since it is uncorrelated from (spatial) layout.**
+
+![Declaration-based navigatio example](/static/blog/a-declarative-approach-to-rn-space-navigation/declaration-based.png)
+
+# ****Introducing Our Solution: React Tv Space Navigation****
+
+![React TV Space Navigation Banner](/static/blog/a-declarative-approach-to-rn-space-navigation/lib-banner.png)
+
+We implemented a React library to solve these issues. You can check it out here: https://github.com/bamlab/react-tv-space-navigation
+
+## Why
+
+As we can’t compute pixel positions easily on different platforms, pixel-based navigation cannot easily be cross-platform.
+
+Thus we chose the second solution with our library: declaration-based navigation.
+
+This is the most efficient way to ensure seamless cross-platform functionality. In addition to this, we have prioritized flexibility in UI-design, ensuring freedom to change layout as desired without hitting any dead-ends.
+
+Space navigation declaration is powered by the great lib https://github.com/bbc/lrud. LRUD is a robust and UI-agnostic library of a spatial navigation representation. It is well tested and high quality code, congratulations to the author 👏.
+
+Please note that it entered maintenance mode since they released a new version (which is not UI-agnostic any more 😢), but we think it’s low risk on our end since it’s easily maintainable.
+
+Our library is mostly a wrapper around LRUD (which holds all the navigation logic). It is made accessible through a React-friendly declarative API, ensuring ease of use and implementation in various applications.
+
+## What it looks like upon usage
+
+![Example](/static/blog/a-declarative-approach-to-rn-space-navigation/example.png)
+
+One of our goals was to aim at simplicity. We love the declarative philosophy of React, and we want to keep it that way for a TV app. We want the spatial navigation to be both simple and flexible. We chose to declare spatial nodes using React components that structure the spatial layout and how they relate to each other when using a remote. We’ll get into more details below.
+
+We want to avoid the developer worrying about the spatial navigation logic. We don’t want them to implement behaviours. We want them to simply declare layouts and let the lib do its job.
+
+Here is an example of the lib usage:
+
+GIST : https://gist.github.com/pierpo/b2a846aecb37a2b33c8ffd8d2626db5d
+
+```tsx
+// This component shows a little rabbit movie that you can focus
+const Rabbit = ({ onSelect }) => (
+  // Declare the focusable behaviour using the SpatialNavigatorNode component!
+  <SpatialNavigationNode isFocusable onSelect={onSelect}>
+    {/* And adapt the focused layout using this child props :) */}
+    {({ isFocused }) => <RabbitLayoutCard isFocused={isFocused} />}
+  </SpatialNavigationNode>
+)
+
+const Page = () => (
+// Provide the spatial navigator to the page
+<SpatialNavigationRoot>
+  {/* Let's declare that our rabbits will be on a same row, spatially */}
+  <SpatialNavigationNode direction="horizontal">
+    {/* Now we can add our rabbits and have the proper console.log upon selection */}
+    {/* with the remote control */}
+    <Rabbit onSelect={() => console.log("rabbit 1 is selected !"}/>
+    <Rabbit onSelect={() => console.log("rabbit 2 is selected !"}/>
+    <Rabbit onSelect={() => console.log("rabbit 3 is selected !"}/>
+  </SpatialNavigationNode>
+</SpatialNavigationRoot>
+)
+```
+
+## How it works under the hood
+
+We won’t get into too much details here. You can check our talk for a deeper understanding of our solution: https://www.youtube.com/watch?v=Asn1TmCH2b0
+
+### The core navigation logic: LRUD
+
+As we said, we use LRUD for the spatial layout logic. Here’s how it works:
+
+- You declare nodes that describe a spatial layout.
+- You give them callbacks for user actions.
+- And then you plug your LRUD’s instance to your remote control events.
+
+![LRUD responsibility](/static/blog/a-declarative-approach-to-rn-space-navigation/lrud-responsibility.png)
+
+
+Here’s what an LRUD declaration would look like as code, and the corresponding layout that it should represent.
+
+GIST : https://gist.github.com/pierpo/1d0c380ddbeada362eda0172c5ad36d8
+
+```tsx
+// not the exact structure, but this is the global idea
+{
+  root: {
+    id: 'root',
+    orientation: 'vertical',
+    children: [
+      { id: 'row1', orientation: 'horizontal', children: [
+        {id: 'program-1-1', isFocusable: true },
+        {id: 'program-1-2', isFocusable: true },
+        {id: 'program-1-3', isFocusable: true },
+        {id: 'program-1-4', isFocusable: true }
+      ]},
+      { id: 'row2', orientation: 'horizontal', children: [
+        {id: 'program-2-1', isFocusable: true },
+        {id: 'program-2-2', isFocusable: true },
+        {id: 'program-2-3', isFocusable: true },
+        {id: 'program-2-4', isFocusable: true },
+      ]}
+    ]
+  }
+}
+```
+
+![LRUD layout example](/static/blog/a-declarative-approach-to-rn-space-navigation/lrud-layout-example.png)
+
+### Syncing LRUD with React
+
+Once we know how LRUD works, we need to synchronise it with React.
+
+To do so, we declare our LRUD elements once our component is rendered for the first time, and update LRUD values when they need to be. That’s basically it.
+
+Plot twist: we’re not using useEffect to declare the nodes, you can check the talk above to understand why the hell we would not stick to the standard.
+
+## Why you should still understand the basics of the underlying logic
+
+### Achieving conditional rendering
+
+It’s a simple and common thing, and there’s a little twist to achieve it with space navigation. You simply need to wrap your element with an additional spatial navigation node that’s never removed. It’s a simple fix, and you can [have a look at the docs](https://github.com/bamlab/react-tv-space-navigation/blob/7ed208bf5d229ffe8698b5507787698ae6c1eabb/docs/pitfalls.md) for a better understanding!
+
+### The focus system is not the native one
+
+You need to know that we are not using the native focus. It can lead to weird behaviours in development mode. For example, react-native-tvos has an overlay for dev errors that uses native focus. In that case, we’ll have two parallel focuses at the same time. It’s annoying but for now you can simply remove the yellowbox feature. We might find a better solution in the future.
+
+In production, we’ve never seen cases where this conflict becomes an issue because we don’t use any other native popups.  But you need to be aware of this limitation because it might be an issue someday (if you have a native AndroidTV/tvOS popup coming up for some reason!).
+
+### Accessibility
+
+The lib does not support accessibility features yet. It’s still work in progress. If you want to give us a hand, help would be appreciated 🙂
+
+# Conclusion
+
+Spatial navigation is hard. There are many existing solutions to solve it, but none of them was satisfying enough regarding cross-platform apps.
+
+With https://github.com/bamlab/react-tv-space-navigation, we’re proposing an alternative which addresses this issue for *any* platform that runs React. You will love the API of the library, as it is 100% declarative and aims at abstracting the navigation logic away.
+
+There are a few caveats that should know about (accessibility, the focus system not being the native one, conditional rendering), but it’s been working super well for us.
+
+Also, feel free to have a look at the code! It’s one of the most interesting thing we ever had to build, and you might find exciting topics in there as well 🙂
+
+We hope you’ll enjoy it!
+
+# Links
+
+- Blog Norigin-media: https://noriginmedia.com/2022/03/29/react-based-spatial-navigation-on-smart-tv-apps/
+- Norigin-Media’s library: https://github.com/NoriginMedia/Norigin-Spatial-Navigation
+- LRUD: https://github.com/bbc/lrud
+- React-native TVOS: https://github.com/react-native-tvos/react-native-tvos
+- Our library: https://github.com/bamlab/react-tv-space-navigation
