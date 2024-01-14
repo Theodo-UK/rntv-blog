@@ -10,7 +10,7 @@ const ContentSecurityPolicy = `
   script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app https://*.googletagmanager.com;
   style-src 'self' 'unsafe-inline';
   img-src * blob: data: https://*.google-analytics.com https://*.googletagmanager.com;
-  media-src *.s3.amazonaws.com;
+  media-src 'self' *.s3.amazonaws.com;
   connect-src * https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;
   font-src 'self';
   frame-src giscus.app https://www.youtube.com;
