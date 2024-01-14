@@ -7,7 +7,8 @@ import { SpecialThanks } from 'src/features/AboutPage/SpecialThanks'
 export const metadata = genPageMetadata({ title: 'About' })
 
 export default function Page() {
-  const authorsList = allAuthors.filter((p) => p.slug !== 'justin_kek')
+  const editors = ['default', 'pierrep']
+  const authorsList = allAuthors.filter((p) => editors.includes(p.slug))
   const justinKek = allAuthors.find((p) => p.slug === 'justin_kek') as Authors
   const thanksList = [justinKek]
   return (

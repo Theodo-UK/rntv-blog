@@ -1,6 +1,6 @@
 ---
 title: 'Remote controls for React TV apps: a declarative approach with react-tv-space-navigation 1.0!'
-date: '2023-01-12'
+date: '2024-01-12'
 authors: ['pierrep', 'alexcolas']
 tags: ['react native', 'tv apps', 'spatial navigation']
 draft: false
@@ -19,10 +19,12 @@ React Native is a really good candidate to solve this challenge. It is an amazin
 
 One of the hardest challenges we had to solve while building a cross-platform TV app was the spatial navigation. Which component should be focused when I press right, down, right? It is not trivial.
 
-<VideoAtom src="/static/blog/a-declarative-approach-to-rn-space-navigation/demo.mp4" type="video/mp4"/>
+<VideoAtom
+  src="/static/blog/a-declarative-approach-to-rn-space-navigation/demo.mp4"
+  type="video/mp4"
+/>
 
-> Wikipedia : *In computing, **spatial navigation** is the ability to navigate between focusable elements, such as hyperlinks and form controls, **within a structured document or user interface** **according to the spatial location.***
->
+> Wikipedia : \*In computing, **spatial navigation** is the ability to navigate between focusable elements, such as hyperlinks and form controls, **within a structured document or user interface** **according to the spatial location.\***
 
 There are many solutions to this problem. There is now a native solution for both AndroidTV and tvOS that was upstreamed in https://github.com/react-native-tvos/react-native-tvos (many thanks to the contributors who did that). But it won’t work on the web. On the other hand, Norigin developed its own navigation system for the web with https://github.com/NoriginMedia/Norigin-Spatial-Navigation, but it does not work well on native apps.
 
@@ -34,7 +36,7 @@ Pixel-based navigation relies on visual layout of focusable elements. To determi
 
 - Pros: no additional code is needed to handle spatial navigation. The navigation between rendered elements works out-of-the-box.
 - Cons: it’s **not very flexible**. If your layout isn’t perfect (items of same sizes and regularly spaced), you might encounter strange movement behaviours.
-Also, **implementation greatly depends on the platform**: computing the position of an element on screen for a web browser or for Android is not the same.
+  Also, **implementation greatly depends on the platform**: computing the position of an element on screen for a web browser or for Android is not the same.
 
 ![Pixel-based navigation example](/static/blog/a-declarative-approach-to-rn-space-navigation/pixel-based.png)
 
@@ -47,7 +49,7 @@ Declaration-based navigation relies on a structured declaration of spatial posit
 
 ![Declaration-based navigatio example](/static/blog/a-declarative-approach-to-rn-space-navigation/declaration-based.png)
 
-# ****Introducing Our Solution: React Tv Space Navigation****
+# \***\*Introducing Our Solution: React Tv Space Navigation\*\***
 
 ![React TV Space Navigation Banner](/static/blog/a-declarative-approach-to-rn-space-navigation/lib-banner.png)
 
@@ -118,7 +120,6 @@ As we said, we use LRUD for the spatial layout logic. Here’s how it works:
 
 ![LRUD responsibility](/static/blog/a-declarative-approach-to-rn-space-navigation/lrud-responsibility.png)
 
-
 Here’s what an LRUD declaration would look like as code, and the corresponding layout that it should represent.
 
 GIST : https://gist.github.com/pierpo/1d0c380ddbeada362eda0172c5ad36d8
@@ -167,7 +168,7 @@ It’s a simple and common thing, and there’s a little twist to achieve it wit
 
 You need to know that we are not using the native focus. It can lead to weird behaviours in development mode. For example, react-native-tvos has an overlay for dev errors that uses native focus. In that case, we’ll have two parallel focuses at the same time. It’s annoying but for now you can simply remove the yellowbox feature. We might find a better solution in the future.
 
-In production, we’ve never seen cases where this conflict becomes an issue because we don’t use any other native popups.  But you need to be aware of this limitation because it might be an issue someday (if you have a native AndroidTV/tvOS popup coming up for some reason!).
+In production, we’ve never seen cases where this conflict becomes an issue because we don’t use any other native popups. But you need to be aware of this limitation because it might be an issue someday (if you have a native AndroidTV/tvOS popup coming up for some reason!).
 
 ### Accessibility
 
@@ -177,7 +178,7 @@ The lib does not support accessibility features yet. It’s still work in progre
 
 Spatial navigation is hard. There are many existing solutions to solve it, but none of them was satisfying enough regarding cross-platform apps.
 
-With https://github.com/bamlab/react-tv-space-navigation, we’re proposing an alternative which addresses this issue for *any* platform that runs React. You will love the API of the library, as it is 100% declarative and aims at abstracting the navigation logic away.
+With https://github.com/bamlab/react-tv-space-navigation, we’re proposing an alternative which addresses this issue for _any_ platform that runs React. You will love the API of the library, as it is 100% declarative and aims at abstracting the navigation logic away.
 
 There are a few caveats that should know about (accessibility, the focus system not being the native one, conditional rendering), but it’s been working super well for us.
 
