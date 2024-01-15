@@ -33,6 +33,9 @@ export function generateArticleMetadata(slugs: string[]) {
   return {
     title: post.title,
     description: post.summary,
+    alternates: {
+      canonical: post.canonicalUrl,
+    },
     openGraph: {
       title: post.title,
       description: post.summary,
