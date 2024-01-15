@@ -37,6 +37,10 @@ canonicalUrl: https://tailwind-nextjs-starter-blog.vercel.app/blog/introducing-t
 ---
 ```
 
+### Configuring canonical URLs for your article
+
+If your article was originally published on another site, you can specify the canonical URL in the frontmatter. This will help search engines to understand that the article was originally published on another site and avoid duplicate content issues. Simply add the `canonicalUrl` field to your frontmatter.
+
 ## Selecting a layout for your article
 - There are currently 3 post layouts available: `PostLayout`, `PostSimple` and `PostBanner`. `PostLayout` is the default 2 column layout with meta and author information. `PostSimple` is a simplified version of `PostLayout`, while `PostBanner` features a banner image.
 
@@ -59,4 +63,6 @@ For videos in the public folder:
 > Try to avoid adding large videos to the public folder as it will increase the build time and bundle size of the blog. If you need to add a large video (>5MB), please upload it to YouTube instead. If your videos are small and don't require audio, consider converting them to GIFs instead.
 
 ## Adding JSX or React components to your article
+
 You can pass your own JSX code or React component by specifying it in `components/MDXComponents.js`. You can then use them directly in the `.mdx` or `.md` file. By default, a custom link, `next/image` component, table of contents component and Newsletter form are passed down. Note that the components should be default exported to avoid [existing issues with Next.js](https://github.com/vercel/next.js/issues/51593)
+
