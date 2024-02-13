@@ -1,0 +1,376 @@
+---
+title: 'Turbocharge your TV App: Adding Native Functionality with Turbo Modules'
+date: '2024-02-13'
+authors: ['anisha']
+tags: ['react native', 'tv apps']
+draft: false
+summary: Adding Native Functionality to your TV App with Turbo Modules
+canonicalUrl: 'https://dev.to/amazonappdev/a-guide-to-turbo-modules-in-react-native-5aa3'
+---
+
+As a React Native developer, I appreciate the flexibility that comes from the framework's cross-platform functionality. But, there are moments when I do need access to native functionality. Enter Turbo Modules, React Native's magic door to the native world.
+
+In this article I will start by covering what Turbo Modules are and the underlying need that led to their creation. From there, I will guide you through a step-by-step example where you'll learn how to create a custom Turbo Module and integrate it into your React Native TV app, enabling direct access to an Android Native API. This app can then be run on any Android TV or Fire TV device as shown in the demo below:
+
+<VideoAtom
+  src="/static/blog/adding-native-functionality-to-your-tv-app/demo.mp4"
+  type="video/mp4"
+/>
+
+**TLDR**: Check out the Github repo [here](https://github.com/anishamalde/RNTurboModuleDemo/tree/main).
+
+## Why Turbo Modules matter - Overcoming the Limitations of the Native Modules
+
+Previously when working with React Native, communication between the Native and JavaScript layers of applications was achieved through the JavaScript Bridge - also known as [Native Modules](https://reactnative.dev/docs/native-modules-intro). However, this approach had a number of drawbacks:
+
+- The bridge operated asynchronously, meaning it would batch multiple calls to the native layer and invoke them at predetermined intervals.
+- Data passing through the bridge had to undergo serialization and deserialization on the native side, introducing overhead and latency.
+- The bridge lacked type safety. Any data could be passed across it without strict enforcement, leaving it up to the native layer to handle and process the data appropriately.
+- During app startup, all native modules had to be loaded into memory, causing delays in launching the app for users.
+
+To tackle these issues, the creators of React Native introduced:
+
+**[Codegen](https://reactnative.dev/docs/next/the-new-architecture/pillars-codegen), [Turbo Modules](https://reactnative.dev/docs/next/the-new-architecture/pillars-turbomodules) and [Fabric](https://reactnative.dev/docs/next/the-new-architecture/pillars-fabric-components) which form [the New Architecture](https://reactnative.dev/docs/next/the-new-architecture/pillars) of React Native.**
+
+<ImageAtom
+  src="/static/blog/adding-native-functionality-to-your-tv-app/new-architecture.png"
+  caption="React Native's New Architecture"
+/>
+
+Turbo Modules are the next iteration of Native Modules that address the asynchronous and loading problems by lazy loading modules, allowing for faster app startup. Turbo Modules improve the performance of your app as by bypassing the JavaScript bridge and directly communicate with native code they reduce the overhead of communication between JavaScript and native code.
+
+Codegen resolves the type safety concern by generating a JavaScript interface at build time. These interfaces ensure that the native code remains synchronized with the data passed from the JavaScript layer. Additionally, Codegen facilitates the creation of JSI bindings, which enable efficient and direct interaction between JavaScript and native code without the need for a bridge. Utilizing JSI bindings allows React Native applications to achieve faster and more optimized communication between the native and JavaScript layers.
+
+In addition, Fabric is the new rendering system for React Native that leverages the capabilities of Turbo Modules and Codegen. Together, these three components form the pillars of the new architecture in React Native, providing enhanced performance, improved type safety, and streamlined interoperability between native and JavaScript code.
+
+Phew, sounds complex! 🤯 So you might be asking yourself:
+
+## In what scenario’s would I need a Turbo Module?
+
+1. **Access to device APIs:** Turbo Modules can grant you direct access to device APIs that are not exposed through standard JavaScript modules. This allows you to integrate with device-specific capabilities, such as accessing Bluetooth, microphone, or other hardware features. While in some cases you can use standard JavaScript modules, the performance might not be optimal, and you may not have access to all the advanced features provided by the native APIs. Turbo Modules create access to the full native functionality.
+2. **Native UI components:** Turbo Modules can be used to create custom native UI components that provide a more seamless and performant user experience compared to their JavaScript-based counterparts.
+3. **CPU-intensive tasks:** If your app performs CPU-intensive tasks, such as graphics processing, audio/video encoding, or streaming, using a Turbo Module can help offload these tasks to native code, taking advantage of the device's computational power and optimizing performance.
+
+## The steps to create a Turbo Module for your app
+
+Let’s dive into how to add a custom Turbo Module to a React Native app that has the new architecture enabled. The example Turbo Module we will design will pull the model number of an Android device for our app to display on screen. We can then run our React Native app on any Android Device including Amazon Fire Devices.
+
+### Prerequisites
+
+- [React Native 0.69](https://reactnative.dev/blog/2022/06/21/version-069) - this is the version introduces the new Architecture.
+- [Typescript app](https://reactnative.dev/docs/typescript) - Codegen requires that we use types.
+
+> **Tip**: Remove any old versions of `react-native-cli package`, as it may cause unexpected build issues. You can use the command `npm uninstall -g react-native-cli @react-native-community/cli`
+
+### Step 1: Create a new app and setup Turbo Module folders
+
+- Create a new folder called TurboModuleDemo and within it create a new app called DeviceName
+
+```
+npx react-native@latest init DeviceName
+```
+
+> **Tip**: In order to keep the Turbo Module decoupled from the app, it's a good idea to define the module separately from the app and then later add it as a dependency to your app. This allows you to easily release it separately if needed.
+
+- Within `TurboModuleDemo`, create a folder called `RTNDeviceName`. RTN stands for "React Native", and is a recommended prefix for React Native modules.
+- Within `RTNDeviceName`, create two subfolders: `js` and `android`.
+
+Your folder structure should look like this:
+
+```
+TurboModulesDemo
+├── DeviceName
+└── RTNDeviceName
+    ├── android
+    └── js
+```
+
+### Step 2: JavaScript Specification
+
+As mentioned, the New Architecture requires interfaces specified, so for this demo we will use TypeScript. Codegen will then use these specifications to generate code in strongly-typed languages ( C++, Objective-C++, Java)
+
+- Within the `js` folder, create a file called `NativeGetDeviceName.ts`. Codegen will only look for files matching the pattern NativeModuleName with a `.ts`, or `.tsx` extension.
+- Copy the following code into the file:
+
+[NativeGetDeviceName.ts](https://github.com/anishamalde/RNTurboModuleDemo/blob/main/RTNDeviceName/js/NativeGetDeviceName.ts)
+
+```js
+import type { TurboModule } from "react-native/Libraries/TurboModule/RCTExport";
+import { TurboModuleRegistry } from "react-native";
+
+export interface Spec extends TurboModule {
+  getDeviceModel(): Promise<string>;
+}
+
+export default TurboModuleRegistry.get<Spec>("RTNDeviceName") as Spec | null;
+```
+
+Let's look into the code. First is the imports: the TurboModule type defines the base interface for all Turbo Modules and the TurboModuleRegistry JavaScript module contains functions for loading Turbo Modules.
+
+The second section of the file contains the interface specification for the Turbo Module. In this case, the interface defines the `getDeviceModel` function, which returns a promise that resolves to a string. This interface type must be named Spec for a Turbo Module.
+
+Finally, we invoke `TurboModuleRegistry.get`, passing the module's name, which will load the Turbo Native Module if it's available.
+
+### Step 3: Adding Configurations
+
+Next, you will need to add some configuration to run Codegen. In the root of the `RTNDeviceName` folder
+
+- Add a `package.json `file with the following contents:
+
+[package.json](https://github.com/anishamalde/RNTurboModuleDemo/blob/main/RTNDeviceName/package.json)
+
+```json
+{
+  "name": "rtn-device",
+  "version": "0.0.1",
+  "description": "Get device name with Turbo Modules",
+  "react-native": "js/index",
+  "source": "js/index",
+  "files": ["js", "android", "!android/build"],
+  "keywords": ["react-native", "android"],
+  "license": "MIT",
+  "devDependencies": {},
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "codegenConfig": {
+    "name": "RTNDeviceSpec",
+    "type": "modules",
+    "jsSrcsDir": "js",
+    "android": {
+      "javaPackageName": "com.rtndevice"
+    }
+  }
+}
+```
+
+[Yarn](https://yarnpkg.com/) will use this file when installing your module. It is also what contains the Codegen configuration - specified by the `codegenConfig` field.
+
+- Next, create a `build.gradle` file in the android folder, with the following contents:
+
+[build.gradle](https://github.com/anishamalde/RNTurboModuleDemo/blob/main/RTNDeviceName/android/build.gradle)
+
+```
+buildscript {
+  ext.safeExtGet = {prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  }
+  repositories {
+    google()
+    gradlePluginPortal()
+  }
+  dependencies {
+    classpath("com.android.tools.build:gradle:7.3.1")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.22")
+  }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'com.facebook.react'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+android {
+  compileSdkVersion safeExtGet('compileSdkVersion', 33)
+  namespace "com.rtndevice"
+}
+
+repositories {
+  mavenCentral()
+  google()
+}
+
+dependencies {
+  implementation 'com.facebook.react:react-native'
+}
+```
+
+This step creates a class, called `DevicePackage`, that extends the `TurboReactPackage` interface. This class serves as a bridge between the Turbo Module and the React Native app. Interestingly, you don't necessarily have to fully implement the package class. Even an empty implementation is sufficient for the app to recognize the Turbo Module as a React Native dependency and attempt to generate the necessary scaffolding code.
+
+React Native relies on the `DevicePackage` interface to determine which native classes should be used for the ViewManager and Native Modules exported by the library. By extending the `TurboReactPackage` interface, you ensure that the Turbo Module is properly integrated into the React Native app's architecture.
+
+This means that even if the package class appears to be empty or lacking implementation, the React Native app will still recognize and process the Turbo Module, attempting to generate the required code to make it functional.
+
+- Create a folder called `rtndevice` under: `android/src/main/java/com`. Inside the folder, create a `DevicePackage.kt` file.
+
+[DevicePackage.kt](https://github.com/anishamalde/RNTurboModuleDemo/blob/main/RTNDeviceName/android/src/main/java/com/rtndevice/DevicePackage.kt)
+
+```kotlin
+package com.rtndevice;
+
+import com.facebook.react.TurboReactPackage
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.module.model.ReacTurboModuleoduleInfoProvider
+
+class DevicePackage : TurboReactPackage() {
+  override fun getModule(name: String?, reactContext: ReactApplicationContext): NativeModule? = null
+
+  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider? = null
+}
+```
+
+At the end of these steps, the android folder should look like this:
+
+```
+android
+├── build.gradle
+└── src
+    └── main
+        └── java
+            └── com
+                └── rtndevice
+                    └── DevicePackage.kt
+```
+
+### Step 4: Adding Native Code
+
+For the final step in creating your Turbo Module you'll need to write some native code to connect the JavaScript side to the native platforms. To generate the code for Android, you will need to invoke Codegen.
+
+- From the `DeviceName` project folder run:
+
+```
+yarn add ../RTNDeviceName
+cd android
+./gradlew generateCodegenArtifactsFromSchema
+```
+
+> **Tip**: You can verify the scaffolding code was generated by looking in: `DeviceName/node_modules/rtn-device/android/build/generated/source/codegen`
+
+> **Tip**: Open the `android/gradle.properties` file within your app (DeviceName) and ensure the `newArchEnabled` property is true.
+
+The native code for the Android side of a Turbo Module requires you to create a DeviceModule.kt that implements the module.
+
+- In the `rtndevice` folder create a `DeviceModule.kt` file:
+
+```
+android
+├── build.gradle
+└── src
+    └── main
+        └── java
+            └── com
+                └── rtndevice
+                    ├── DeviceModule.kt
+                    └── DevicePackage.kt
+
+```
+
+- Add the following code the the `DeviceModule.kt ` file:
+
+[DeviceModule.kt](https://github.com/anishamalde/RNTurboModuleDemo/blob/main/RTNDeviceName/android/src/main/java/com/rtndevice/DeviceModule.kt)
+
+```kotlin
+package com.rtndevice
+import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReactApplicationContext
+import com.rtndevice.NativeGetDeviceNameSpec
+import android.os.Build
+
+class DeviceModule(reactContext: ReactApplicationContext) : NativeGetDeviceNameSpec(reactContext) {
+
+  override fun getName() = NAME
+
+  override fun getDeviceModel(promise: Promise) {
+    val manufacturer: String = Build.MANUFACTURER
+    val model: String = Build.MODEL
+    promise.resolve(manufacturer + model)
+  }
+
+  companion object {
+    const val NAME = "RTNDeviceName"
+  }
+}
+```
+
+This class implements the `DeviceModule` which extends the `NativeGetDeviceNameSpec` interface that was generated by codegen from the NativeGetDeviceName TypeScript specification file. It is also the class that contains our `getDeviceModel` function, that returns a promise with the device model as a string.
+
+- Update the [DevicePackage.kt](https://github.com/anishamalde/RNTurboModuleDemo/blob/main/RTNDeviceName/android/src/main/java/com/rtndevice/DevicePackage.kt)
+
+```kotlin
+package com.rtndevice;
+
+import com.facebook.react.TurboReactPackage
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.module.model.ReactModuleInfoProvider
+import com.facebook.react.module.model.ReactModuleInfo
+
+class DevicePackage : TurboReactPackage() {
+    override fun getModule(name: String?, reactContext: ReactApplicationContext): NativeModule? =
+       if (name == DeviceModule.NAME) {
+        DeviceModule(reactContext)
+       } else {
+         null
+       }
+
+     override fun getReactModuleInfoProvider() = ReactModuleInfoProvider {
+       mapOf(
+         DeviceModule.NAME to ReactModuleInfo(
+           DeviceModule.NAME,
+           DeviceModule.NAME,
+           false, // canOverrideExistingModule
+           false, // needsEagerInit
+           true, // hasConstants
+           false, // isCxxModule
+           true // isTurboModule
+         )
+       )
+     }
+}
+```
+
+### Step 5: Adding the Turbo Module to your App
+
+- To add the Turbo Module to your app, from your DeviceName app folder, re-run:
+
+```
+yarn add ../RTNDeviceName
+```
+
+> **Tip**: To ensure the changes in your TurboModule are reflected in your app delete your `node_modules` before performing the yarn add.
+
+Now you can use your Turbo Module to use the `getDeviceName` function in your app!
+
+- In your `App.tsx` call the `getDeviceModel` method:
+
+[App.tsx](https://github.com/anishamalde/RNTurboModuleDemo/blob/main/TMDemo/App.tsx)
+
+```js
+import React from 'react';
+import {useState} from 'react';
+import {SafeAreaView, StatusBar, Text, Button} from 'react-native';
+import RTNDeviceName from 'rtn-device/js/NativeGetDeviceName';
+
+const App: () => JSX.Element = () => {
+  const [result, setResult] = useState<string | null>(null);
+
+  return (
+    <SafeAreaView>
+      <StatusBar barStyle={'dark-content'} />
+      <Text style={{marginLeft: 20, marginTop: 20}}>
+        {result ?? 'Whats my device?'}
+      </Text>
+      <Button
+        title="Compute"
+        onPress={async () => {
+          const value = await RTNDeviceName?.getDeviceModel();
+          setResult(value ?? null);
+        }}
+      />
+    </SafeAreaView>
+  );
+};
+export default App;
+```
+
+Check out your Turbo Module in action by running `npm run android` on any Android device including the Amazon Fire TV Devices:
+
+<VideoAtom
+  src="/static/blog/adding-native-functionality-to-your-tv-app/demo.mp4"
+  type="video/mp4"
+/>
+
+Congratulations for successfully implementing a simple Turbo Module in an app! Hopefully with this article and the [sample code](https://github.com/anishamalde/RNTurboModuleDemo) you now have a better understanding for how to integrate Turbo Modules into your projects.
+
+Let me know in the comments what you create a Turbo Module for!
