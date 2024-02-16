@@ -37,7 +37,7 @@ To tackle these issues, the creators of React Native introduced:
   caption="React Native's New Architecture"
 />
 
-Turbo Modules are the next iteration of Native Modules that address the asynchronous and loading problems by lazy loading modules, allowing for faster app startup. Turbo Modules improve the performance of your app as by bypassing the JavaScript bridge and directly communicate with native code they reduce the overhead of communication between JavaScript and native code.
+Turbo Modules are the next iteration of Native Modules that address the asynchronous and loading problems by lazy loading modules, allowing for faster app startup. Turbo Modules improve the performance of your app as by bypassing the JavaScript bridge and directly communicate with native code. They reduce the overhead of communication between JavaScript and native code.
 
 Codegen resolves the type safety concern by generating a JavaScript interface at build time. These interfaces ensure that the native code remains synchronized with the data passed from the JavaScript layer. Additionally, Codegen facilitates the creation of JSI bindings, which enable efficient and direct interaction between JavaScript and native code without the need for a bridge. Utilizing JSI bindings allows React Native applications to achieve faster and more optimized communication between the native and JavaScript layers.
 
@@ -53,7 +53,7 @@ Phew, sounds complex! 🤯 So you might be asking yourself:
 
 ## The steps to create a Turbo Module for your app
 
-Let’s dive into how to add a custom Turbo Module to a React Native app that has the new architecture enabled. The example Turbo Module we will design will pull the model number of an Android device for our app to display on screen. We can then run our React Native app on any Android Device including Amazon Fire Devices.
+Let’s dive into how to add a custom Turbo Module to a React Native app that has the new architecture enabled. The example Turbo Module we will design will pull the model number of an Android device for our app to display on screen. We can then run our React Native app on any Android device including Amazon Fire OS devices.
 
 ### Prerequisites
 
@@ -78,7 +78,7 @@ npx react-native@latest init DeviceName
 Your folder structure should look like this:
 
 ```
-TurboModulesDemo
+TurboModuleDemo
 ├── DeviceName
 └── RTNDeviceName
     ├── android
@@ -115,7 +115,7 @@ Finally, we invoke `TurboModuleRegistry.get`, passing the module's name, which w
 
 Next, you will need to add some configuration to run Codegen. In the root of the `RTNDeviceName` folder
 
-- Add a `package.json `file with the following contents:
+- Add a `package.json` file with the following contents:
 
 [package.json](https://github.com/anishamalde/RNTurboModuleDemo/blob/main/RTNDeviceName/package.json)
 
@@ -352,7 +352,7 @@ const App: () => JSX.Element = () => {
         {result ?? 'Whats my device?'}
       </Text>
       <Button
-        title="Compute"
+        title="Tell me!"
         onPress={async () => {
           const value = await RTNDeviceName?.getDeviceModel();
           setResult(value ?? null);
@@ -371,6 +371,6 @@ Check out your Turbo Module in action by running `npm run android` on any Androi
   type="video/mp4"
 />
 
-Congratulations for successfully implementing a simple Turbo Module in an app! Hopefully with this article and the [sample code](https://github.com/anishamalde/RNTurboModuleDemo) you now have a better understanding for how to integrate Turbo Modules into your projects.
+Congratulations for successfully implementing a simple Turbo Module in an app! Hopefully with this article and the [sample code](https://github.com/anishamalde/RNTurboModuleDemo) you now have a better understanding for how to integrate Turbo Modules into your TV apps.
 
 Let me know in the comments what you create a Turbo Module for!
