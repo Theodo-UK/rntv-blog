@@ -1,0 +1,170 @@
+---
+title: 'Universal Apps: A Single, Unified Codebase Powering Mobile, Desktop, Web, and TV?'
+date: '2024-02-24'
+authors: ['jameshw']
+tags: ['react native', 'universal apps']
+draft: false
+summary: Frameworks such as React Native and Electron.JS both offer abstractions allowing developers to use established web technologies to build applications on native mobile and desktop platforms respectively - the concept of “Universal” Apps takes this a step further. This article discusses how we might use the lessons described in Robert C. Martin’s Clean Architecture to create a single app which can be distributed natively across all platforms. At Theodo, we've deployed Universal Apps to production for streaming services and we're currently researching how this architecture extends to TV apps.
+canonicalUrl: 'https://www.jameshw.dev/blog/2023-09-24/universal-application-architecture'
+---
+
+In 2021, my Tech Lead recommended Robert C. Martin's book, _Clean Code: A Handbook of Agile Software Craftsmanship_, to me. I read the book cover to cover, absorbed its contents, and began applying some of the principles articulated in the book.
+
+Before becoming a Tech Lead myself, I graduated to reading the spiritual successor, _Clean Architecture: A Craftsman’s Guide to Software Structure and Design_. Despite the fact that many of the principles discussed relate to OOP, they remain just as relevant to all domains of Software Engineering today.
+
+I want to show how powerful the principles of Clean Architecture can be, enabling developers to work on a single unified codebase which can be packaged as five _truly_ native applications (that's iOS, Android, macOS, Windows, and Web - Android TV and Apple TV incoming!).
+
+## The Problem of Supporting Multiple Platforms
+
+Let’s not beat around the bush: Software Engineering is a means to an end, not the end in itself. What we really care about is the problems we’re solving for the end user. Codebase quality is vital in making it easy to change our solution (our product) as we learn more about the problem so we can continue to deliver value as time goes on.
+
+Codebases often become harder to change the older they get - eventually, the cost of making a change outweighs the value of making it, and the product cannot be changed as the problem (or the market) evolves.
+
+Engineers are constantly fighting to minimise the complexity of a system.
+
+As your product or service scales, it often becomes more of a competitive advantage to allow users to consume your app across multiple platforms. In fact, at a large scale, support for multiple platforms becomes a _requirement_ for your business to survive. For example, I would probably switch streaming services if Netflix didn’t support a smart TV app alongside a web app, and Facebook wouldn’t be what it is today without offering both web and mobile on Android and iOS.
+
+Supporting multiple platforms can be unavoidable at scale, and with it comes a large degree of complexity.
+
+The “simplest” way of supporting multiple distributions is to have one application for each platform, with completely independent implementations which have no shared code. This approach aims to minimise complexity by completely decoupling implementations, however there are three main drawbacks to this approach:
+
+1. **Cost of development**: if you want one feature on seven platforms, you need to develop that one thing seven times.
+2. **Alignment problems**: presumably, each platform has a single team that (due to the implementation details & platform-specific APIs) will each run into different _platform-specific_ constraints - meaning each app becomes complex in _different_ places. Over the years, as each platform develops its own quirks, the release of features becomes misaligned leading to massive organisational overhead and also user confusion of feature parity across platforms.
+
+   <ImageAtom
+     src="/static/blog/universal-apps-powering-seven-platforms/development-speed-graph.png"
+     caption="Feature parity across different platforms becomes misaligned over time, causing waste."
+   />
+
+   Above, we see that iOS and Android started out with feature parity, but perhaps the Android team ran into some issues which left their platform more difficult to develop. The web gets added later and requires a lot of extra work to reach feature parity with iOS. As time goes on, all three platforms diverge.
+
+3. **Excessive code duplication**: in his book, Martin shared that “_things that change at the same time for the same reasons should live together_” (i.e. have shared code). As implementations diverge, when we want to go back and change a feature (e.g. a high-level business rule), the complexity of this high-level change depends on the low-level details of each platform - business rules are written in Kotlin on Android and then in Swift on iOS _and then_ in Typescript on the web.
+
+   Consequently, platform-specific bugs relating to high-level business rules - which should be constant across all platforms - become inevitable.
+
+## Backend for Frontend to the Rescue?
+
+OK, you say, we want to avoid the cost of implementing the same code multiple times - why don’t we create a minimal presenter layer for each platform and drive each application by one shared backend? That way we can make all the shared code live on the backend and when a business rule changes, we can simply make a change _there_ to reduce the cost of feature development, keep features aligned, and reduce duplication of code.
+
+Backend for frontend is one option to reduce work, however, there are a few considerations for this:
+
+1. **Frontend-heavy apps**: not all apps are “UI-lite” or simple form submissions - you might find that your “simple” presenter becomes more complex than you expect (especially over time) which leaves you not significantly better off than developing separate applications. I see this as a very common misconception. The danger of this misconception is that, by the time you realise your individual native apps are diverging, it's too late - you're already in the boat of having separate native apps with all the added complexity.
+2. **Cost of computation**: think about where you want your code to run - if you push more computation to the backend, your costs will be higher, as it’s your server which runs your user’s code. If you don’t _need_ a backend you could distribute all the computation to your users’ devices which would cost you nothing to scale to millions of users via a client-only app.
+3. **User experience**: the more you push things to the server, the less the user can do offline, and the higher the latency of actions. For practical reasons, you might want things like form validation to stick on the client side, which will be implemented on each platform and can get quite tricky.
+
+Having shared business logic on the server certainly solves some of the above issues with supporting multiple platforms, however in some cases it won’t be enough - we still have multiple diverging codebases for each native presenter app.
+
+Using a Universal App does not prevent us from pushing shared code to a server, however, when we need code to live on the _client side_, let’s see what we can take from Clean Architecture to address some of these challenges.
+
+## The Main Component is a Detail
+
+This is Martin’s diagram of [The Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html):
+
+{' '}
+
+<ImageAtom
+  src="/static/blog/universal-apps-powering-seven-platforms/clean-architecture.png"
+  caption="Robert C. Martin: Clean Architecture."
+/>
+One of the book’s main principles is arranging the dependencies in your application so that code only
+depends on other code that is more abstract than itself. This means that when we change a high-level
+business rule, we may need to update the UI to adapt (as expected), but when we change the UI, we will
+never need to adapt the business entities as a result.
+
+Inherently, if we implement business logic differently in different platforms, the high-level business rules depend on the lowest-of-the-low-level platform-specific details.
+
+One chapter in the book seems particularly relevant.
+
+Martin has a section about the `Main` component - the entry point of any application - he says:
+
+> The point is that Main is a dirty low-level module in the outermost circle of the clean architecture. It loads everything up for the high level system, and then hands control over to it.
+>
+> Think of Main as a plugin to the application—a plugin that sets up the initial conditions and configurations, gathers all the outside resources, and then hands control over to the high-level policy of the application. Since it is a plugin, it is possible to have many Main components, one for each configuration of your application.
+>
+> For example, you could have a Main plugin for _Dev_, another for _Test_, and yet
+> another for _Production_. You could also have a Main plugin for each country you deploy to, or each jurisdiction, or each customer.
+>
+> When you think about Main as a plugin component, sitting behind an
+> architectural boundary, the problem of configuration becomes a lot easier to
+> solve.
+
+To emphasise this point, he also has chapters called _The Database Is a Detail_, _The Web Is a Detail_, and _Frameworks Are Details_.
+
+In the ideal world - unless I am writing something that is consumed only by a single native layer - I shouldn't need to keep in mind which platform I’m developing for. The `Main` plugin should dictate the low-level implementation details (i.e. what platform we're targeting), and hand over to the highest level of abstraction (i.e. the business logic), which should then take over and drive the lower-level details (like the UI).
+
+It only struck me recently how the lessons Martin teaches in Clean Architecture describe exactly the intention behind a Universal Application Architecture.
+
+## Putting into Practice
+
+So, in practice, how do we go about designing our software so that the `Main` component - the entry point to the app - is the only place we must keep in mind which platform we’re developing for?
+
+This is where the Universal Application Architecture comes in:
+
+<ImageAtom
+  src="/static/blog/universal-apps-powering-seven-platforms/universal-architecture-split.png"
+  caption="How to organise your universal app architecture."
+/>
+
+The majority of your frontend code lives inside a single unified `core` package - once the feature is implemented on one platform, it works across all platforms. Business rules live in one place and are not duplicated across multiple platforms.
+
+In practice, the main dependency of this core package is React. This is because JSX is a very nice and well-established API for describing a representation of UI and updating that representation reactively. Additionally, there are plenty of well-established projects which make consuming React and targeting a specific platform much less costly (e.g. targeting mobile platforms can be _very_ tricky - React Native easily abstracts away most of that complexity. There's also [React Native TVOS](https://github.com/react-native-tvos/react-native-tvos) for TV).
+
+The complexity of native UI elements becomes wrapped into a `ui` package. For example, a native button component will look and feel different for the web vs iOS vs Android, but your package exports an abstract `Button` interface which represents how an implementation can be rendered. This uses Dependency Inversion (DI), which features a lot in Clean Architecture - the `core` module is importing something abstract which changes it’s behaviour based on the system it’s targeting, we can change the low-level implementations for each platform without affecting anything in `core`. In fact, this means we could swap out a whole different native implementation without really affecting much (this displays similar properties to the Façade pattern and Polymorphism in OOP).
+
+The `ui` package should remain minimal - only include that which varies at the native layer. The more things that find their way into this package, the less we see the advantages of having the shared code.
+
+Finally, we have our `Main` components - the entry point to each app. In my diagram, I use React Native (with Expo), NextJS (with SSR), and Tauri (Rust-based web runtime for desktop) for desktop platforms. These are the lowest-level components because they know exactly what platform they are targeting. They stay minimal because they (mostly) just implement the features within the `core` package and configure the build.
+
+If you want to get started with something like this, you can start with `npx create tamagui` (although we've been experimenting with [NativeWind](https://www.nativewind.dev/) for universal styling recently) or a more complete starter repo would be [T4 App](https://t4stack.com/).
+
+In the end, I have five _truly_ native apps - I’m not describing five apps which are each wrappers around a responsive webview. On native Android and iOS, for example, map components will have all the pinch gestures and feel native, compared to their desktop counterparts, where it will be scroll to zoom. If we add another `Main` component for [React Native TVOS](https://github.com/react-native-tvos/react-native-tvos), that's seven platforms supported with one codebase!
+
+I created myself a POC for a simple Universal App which works on the Web with SSR, Android, iOS, macOS, and Windows. I started off with just three platforms and added Tauri (for macOS and Windows) later - after adding a new `Main` component, the two new platforms just worked like magic with all the existing features 🪄
+
+You can see the code [here](https://github.com/JamesDHW/enguage-universal-app)!
+
+<ImageAtom
+  src="/static/blog/universal-apps-powering-seven-platforms/Untitled 3.png"
+  caption="An example implementation of a Universal App. You can see the navigation is native for both platforms, but making a change to the core package will be reflected in both apps."
+/>
+
+## Positives of Universal Apps
+
+Universal Apps offer some benefits:
+
+1. **Cost of development**: once we have the UI atoms, making a new feature works for all platforms. Adding a new platform is "as easy" as adding a new `Main` component - just add a new entry point and you have all the existing features on your new platform.
+2. **Feature parity**: you only need one team to maintain all applications, therefore all your features can stay aligned. The codebase only has one set of quirks that need to be understood by the team (reduced organisational overhead). Equally, you are not _required_ to release everything on each platform at the same time (your entry points can be _built_ independently).
+3. **True native feel**: having an entry point allows you to set up navigation in a native way - in my app I use “stacks” on mobile for navigation but a sidebar on desktop - which meets the users’s expectations for UX.
+4. **Shared client-side code**: if we want to, we can push code to the client without the need to duplicate its implementation. Things like form validation (which inherently lend themselves to being on the client) can be done on the users’ devices for low latency and low cost on the server.
+5. **Simplicity where it matters (decoupling from implementation details)**: the `core` package is where everything important is happening - because developers know this is shared for all platforms, it removes the cognitive overhead of needing to keep in mind platform-specific implementation details when coding everyday business logic.
+
+Good use cases for Universal Apps would be:
+
+- Slack (web/ desktop/ mobile)
+- Notion (web/ desktop/ mobile)
+- Netflix (web/ mobile/ TV OS)
+- Spotify (web/ desktop/ mobile/ TV OS)
+- Facebook (web/ desktop/ mobile)
+- Twitter (web/ desktop/ mobile)
+- YouTube (web/ mobile/ TV OS)
+- WhatsApp (web/ desktop/ mobile)
+
+All of these have a strong need for use and feature parity across multiple platforms whilst also implementing some platform-specific UI to help targeted UX for each native platform (think how Netflix's preview cards look different on mobile vs web).
+
+## Drawbacks of Universal Apps
+
+Unfortunately, it’s not all clean code and sunshine - every architectural decision has drawbacks.
+
+The main drawback of Universal Apps is in the complexity of the codebase. It’s less complex than having multiple apps with their independent complexities that build up over time, however, it’s still more work than if you knew you only ever wanted to build for a single platform.
+
+I wouldn’t build a Universal App unless I was anticipating multiple platforms (I wouldn’t make an app Universal “just in case” I need to support many).
+
+The biggest area of complexity is in developing the `ui` package - let’s take React Native, developed by Meta, for example. They have essentially created a `ui` package very similar to what I am describing (takes React VDOM as input and delegates to native components with consistent behaviour across platforms). The amount of work it took to iron out the quirks before React Native became as stable as it is today was very large (this is why the Universal App builds on React Native and doesn’t repeat the work from scratch). Reconciling multiple UI elements to work on multiple platforms is not an easy feat and we must first consider if the cost of this justifies the benefits of the Universal Application Architecture.
+
+## Closing Thoughts
+
+If you want me to go into more detail on Universal Application Architecture, please feel free to reach out and ask about it - we’re working on some interesting projects at Theodo which put much of the above into practice! We've already deployed Universal Apps to production and have seen many of the benefits and costs of doing so on the ground. At the time of writing, we're also doing some work to bring this to React Native TVOS.
+
+For instance, one of our Tech Leads recently showed us how he configured the bundler on his project to configure the `ui` package to select the correct UI atom by simply naming the files like `Button.native.tsx` or `Button.web.tsx`.
+
+If you enjoyed this article and want to reach out, find me at [jameshw.dev](https://jameshw.dev)!
