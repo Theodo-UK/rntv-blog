@@ -1,0 +1,84 @@
+---
+title: 'Improve TV App Performance with Virtualized Lists'
+date: '2024-05-03'
+authors: ['default']
+tags: ['react native', 'tv apps']
+draft: false
+summary: So far, adoption of React Native for TV has been limited, and this has meant a lack of an industry standard defined for efficient components and APIs for TV devices. This results in poor performance out-of-the-box and many TV app developers fall into the pitfall of using components and APIs in React Native that are built for mobile, only to find that they are unoptimised for TV.
+# canonicalUrl: 'https://example.com/article-name'
+---
+
+## Background
+
+Seasoned React Native developers will be familiar with the performance limitations that arise from using the default `FlatList` component in React Native. This has been a longstanding issue when building mobile apps with React Native, where FlatList can block the JS Thread, causing huge spikes in CPU usage that end up blocking rendering and bring down apps’ FPS.
+
+Although the default `FlatList` component in React Native has some basic virtualization, there are some implementation details that mean that it still faces performance limitations (this will be explored in more detail below).
+
+This has lead to the community building their own custom list implementations to achieve better list performance, an example of which is Shopify’s [Flashlist](https://shopify.github.io/flash-list/).
+
+<ImageAtom
+  src="/static/images/improve-tv-performance-with-virtualized-lists/alex-tweet.png"
+  caption="Alexandre Moureaux's Tweet showing Performance of Flatlist vs Flashlist"
+/>
+
+In a test by our performance expert, [Alexandre Moreaux](https://twitter.com/almouro), we rendered a list with computationally expensive items (videos, carousels, etc) on both `FlatList` and `FlashList` and there are clear gains in performance, namely a significant drop in CPU usage by using `FlashList`.
+
+When building for CTV devices with a lower amount of resources compared to mobile phones, optimising list/carousel performance is more critical and can have an even more noticeable effect on user experience.
+
+Having built RN TV apps over the last few years, we found that the best way to implement lists (carousels) on TV apps was to create a custom list implementation that is specifically tailored to Spatial Navigation on TVs.
+
+<ImageAtom src="/static/images/improve-tv-performance-with-virtualized-lists/react-tv-space-navigation.png" />
+
+We've included our custom, [`SpatialNavigationVirtualizedList`](https://github.com/bamlab/react-tv-space-navigation/blob/main/docs/api.md#spatialnavigationvirtualizedlist) as part of our open source spatial navigation library, [React TV Space Navigation](https://github.com/bamlab/react-tv-space-navigation).
+
+<ImageAtom
+  src="/static/images/improve-tv-performance-with-virtualized-lists/demo-app.gif"
+  caption="A demo app using the SpatialNavigationVirtualizedList components for carousels"
+/>
+
+**When testing the performance of our lists compared to React Native’s default `FlatList` implementation, we found that in a simple app with three carousels, it reduces average CPU usage by over 30%.**
+
+<ImageAtom
+  src="/static/images/improve-tv-performance-with-virtualized-lists/first-chart.png"
+  caption="Overall Performance Comparison between FlatList and React TV Space Navigation's Virtualized List component."
+/>
+
+**On top of that, our usage of the RN JS thread never peaks above 60%, whereas the FlatList implementation goes over 90%.**
+
+<ImageAtom
+  src="/static/images/improve-tv-performance-with-virtualized-lists/second-chart.png"
+  caption="Comparing JS Thread Usage (Pink = React TV Space Navigation, Blue = FlatList)"
+/>
+
+## Implementation Details
+
+Our implementation mainly differs with the `FlatList` implementations in the following ways:
+
+1. **Efficient Recycling of Mounted Components**:
+   1. The `FlatList` implementation assumes that items in the carousel will have large degrees of flexibility and supports functionality such as nesting of a `FlatList` inside of another `FlatList`. As such, the implementation of virtualization will need to mount/unmount components fully as the user scrolls through a list.
+   2. In the case of spatial navigation carousels, in the majority of cases, items are of the same component types (and sizes). In effect, this means that the added flexibility and overhead that comes with `FlatList` is not necessary.
+   3. In our approach, as the user cycles through items in the list, we simply translate the out of viewport components to the end of the list and rerender the data to show the “new” item further along the list. This means we don’t have the additional cost of mounting and unmounting components.
+      <ImageAtom
+        src="/static/images/improve-tv-performance-with-virtualized-lists/transforming-graph.png"
+        caption="Recycling mechanism"
+      />{' '}
+   4. We achieve this by creating a separate small in-memory representation of lists that is detached from React’s VDOM representation, and keep a track of state according to the in-memory representation. This is effectively how we can reuse or “recycle” components that are already rendered by React.
+2. **Fine-grained Control of the Rendered Items:**
+   1. `FlatList` typically chooses under the hood what level of virtualization to do and how heavily to optimise (albeit, this can be overridden to a certain degree). This is to ensure that there is never any empty space, in the case where a user suddenly scrolls at a high speed.
+   2. Given that interactions on TV are done at a constant rate with remotes, we can virtualize at a much more aggressive rate, and only render the number of elements that are absolutely necessary.
+   3. The API for our virtualized list exposes props for the size(s) of elements, and the number of elements that should be rendered, allowing for fine-grained control over the number of elements rendered.
+3. **Reduced Measurements of Elements:**
+   1. `FlatList` assumes that list item sizes will always be variable. Even when it’s provided an estimated size or the number of elements to render, it will always run measurements to ensure that the size of items being rendered conform to the “estimated” measurements.
+   2. By defining a constant size / set of sizes for elements in a carousel, our list implementation does not need to continuously measure the size of items coming in and out of the viewport, significantly reducing the amount of computation required.
+4. **Static Animations Rather than Relying on Active Input Measurements:**
+   1. Another side effect of having consistently sized items and no variability in scrolling is that we can simplify animation logic significantly and use constant static translations, omitting a significant amount of computation for animations compared to `FlatList`.
+
+So far, adoption of React Native for TV has been limited, and this has meant a lack of an industry standard defined for efficient components and APIs for TV devices. This results in poor performance out-of-the-box and many TV app developers fall into the pitfall of using components and APIs in React Native **that are built for mobile**, only to find that they are unoptimised for TV.
+
+This has largely been due to the fact that React Native TV has been maintained by the community without any official backing and adoption by larger companies. In contrast, Microsoft maintains the forks of React Native for desktop devices, and using React Native for Windows and Mac has been heavily optimised and is performant.
+
+As adoption of React Native on TV increases, it becomes important to build out a set of optimised and performant TV components to ensure performance of TV OSs when using React Native.
+
+## Shoutouts
+
+A special shoutout to **Pierre Poupin**, **Mathieu Fedrigo**, and **Alexandre Moureaux** for working on `react-tv-space-navigation` and making standardised, highly-performant TV components more accessible to the community.
