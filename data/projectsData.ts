@@ -22,11 +22,7 @@ const projectsData = [
   {
     title: 'Bringing the Best of React to TV Navigation: A React-Like Solution for Remote Control',
     description: `Have you ever wondered how Netflix navigates within a page with a remote? When you press an arrow button, how does it know which element to focus on?
-    We had to build this for our TV replay app (using RN) and made it the React way.
-    Our challenge was to build on top of the React tree our own tree containing the elements that are focusable with the remote.
-    Through trial and error, we developed a new declarative approach. We'll share the steps we took to synchronise the React tree with the spatial TV layout.
-    By the end of this talk, you'll gain a deeper understanding of the subtleties of React, learn how to simplify complicated logic with a declarative API and discover the non-trivial considerations involved in syncing the React tree with another one.    
-    `,
+    We had to build this for our TV replay app (using RN) and made it the React way.`,
     imgSrc: 'http://img.youtube.com/vi/Asn1TmCH2b0/hqdefault.jpg',
     href: 'https://www.youtube.com/watch?v=Asn1TmCH2b0',
   },
