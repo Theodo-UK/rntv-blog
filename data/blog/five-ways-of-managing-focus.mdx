@@ -1,0 +1,174 @@
+---
+title: '5 Ways to Manage Focus in React Native TV Apps'
+date: '2024-09-16'
+authors: ['anisha']
+tags: ['react native', 'tv apps']
+draft: false
+summary: Focus management is a well known challenge in React Native TV app development. This article explores various solutions provided by the react-native-tvos project, including components like TVFocusGuideView and enhancements to existing components, to help developers handle focus more effectively across different TV platforms.
+canonicalUrl: 'https://dev.to/amazonappdev/5-ways-of-managing-focus-in-react-native-3kfd'
+---
+
+When it comes to handling Focus Management in React Native for TV apps, developers may find themselves going through five familiar stages (of grief): 🫣  😡  🙏  😭  👍  
+
+Focus management is a unique challenge in TV application development, due to the fragmentation across TV platforms that has led to a variety of focus management techniques. Developers have been forced to create and adopt multiple strategies for managing focus, often juggling platform-specific solutions alongside cross-platform abstractions. The challenge of focus is not only ensuring that focus is handled correctly but handling the platform differences. Android TV and Apple's tvOS have distinct native focus engines which you can read more about in [this article](https://dev.to/amazonappdev/tv-navigation-in-react-native-a-guide-to-using-tvfocusguideview-302i) written by my colleague @hellonehha.
+
+Originally, TV-specific docs and APIs were part of the main React Native documentation. Now, most TV-specific content has moved to the [react-native-tvos](https://github.com/react-native-tvos/react-native-tvos) project.
+
+![React Native docs](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/eu34a33i7dhmicmm4okw.png)
+
+## [react-native-tvos](https://github.com/react-native-tvos/react-native-tvos)
+
+`"react-native": "npm:react-native-tvos@latest"`
+
+The `react-native-tvos` project is an open source package that provides additions and extensions to the core React Native framework, with a specific focus on supporting Apple TV and Android TV platforms. Most of the changes in this project are centered around handling focus-based navigation on a SmartTV using the D-Pad on the remote control. The project is maintained by (the incredible!) [Doug Lowder](https://github.com/douglowder) and is commonly recommended as the primary way to handle focus management in React Native TV applications. 
+
+However, like many community-maintained projects, the `react-native-tvos` project has evolved based on the needs of developers, and there are now an multiple ways to handle focus. Lets explore the additional components and enhancements to existing components that `react-native-tvos` provides:
+
+### 1. [TVFocusGuideView](https://github.com/react-native-tvos/react-native-tvos?tab=readme-ov-file#code-changes)
+
+_TVFocusGuideView provides support for Apple's UIFocusGuide API and is implemented in the same way for Android TV, to help ensure that focusable controls can be navigated to, even if they are not directly in line with other controls_ - As per react-native-tvos.  
+
+For example, here’s a grid of 10 `Pressable` components rendered inside a `TVFocusGuideView` component:
+
+```jsx
+import { TVFocusGuideView } from 'react-native';
+
+const TVFocusGuideViewExample = () => {
+  const [focusedItem, setFocusedItem] = useState(null);
+
+  const renderGridItem = number => (
+    <Pressable
+      style={[styles.gridItem, focusedItem === number && styles.focusedItem]}
+      key={number}
+      onFocus={() => setFocusedItem(number)}
+      onBlur={() => setFocusedItem(null)}>
+      <Text style={styles.gridItemText}>{number}</Text>
+    </Pressable>
+  );
+
+  return (
+    <>
+      <Header headerText="Movies" />
+      <TVFocusGuideView trapFocusLeft style={styles.grid}>
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => renderGridItem(num))}
+      </TVFocusGuideView>
+    </>
+  );
+};
+```
+
+![TVFocusGuideView demo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/zkwgoqbg3wyaazwlmn21.gif)
+
+`TVFocusGuideView` accepts a few props that help you handle focus:
+
+#### destinations prop
+
+```jsx
+<TVFocusGuideView destinations={[]}>
+```
+
+With `TVFocusGuideView` you can set an array of components to register as ‘destinations’ of the `TVFocusGuideView`.  Lets look at our example: 
+
+- Setting the `destinations` prop to be a Ref to item 8 `(destinations={[item8Ref.current]})` causes the focus to move to item 8 when we initially navigate to the `TVFocusGuideView`.
+
+![destinations prop demo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/0tc900oo114rz9cierg9.gif)
+
+#### trapFocus prop
+
+```jsx
+<TVFocusGuideView trapFocusUp|trapFocusDown|trapFocusLeft|trapFocusRight  />
+```
+
+This prop ensures focus does not escape from the parent component for the given directions. This prop ensures focus does not escape from the parent component for the given directions. Lets look at our example: 
+
+- With the `trapFocusLeft` prop you can no longer navigate Left out of the container 
+
+![Trap focus demo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/tbbzmjvo1x36us84n8kk.gif)
+
+#### autofocus prop
+
+```jsx
+ <TVFocusGuideView autoFocus />
+```
+
+When autofocus is set to true, the `TVFocusGuideView` will manage focus for you by redirecting the focus to the first focusable child. It also remembers the last focused child and redirects the focus to it on the subsequent visits. If this prop is used with the  `destinations` prop, the component set by the destinations prop will take precedence. Lets look at our example: 
+
+- Without this prop when we moved from the Header component to the `TVFocusGuideView` focus went to the nearest component - item 3 (as per Androids proximity based built-in focus engine)
+- With the `autofocus` prop it goes to item 1
+
+![Autofocus demo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/54srvhvepazwhfs67xav.gif)
+
+### 2. [Touchable](https://github.com/react-native-tvos/react-native-tvos?tab=readme-ov-file#code-changes)
+
+With the `react-native-tvos`, the `Touchable` component's ( `TouchableWithoutFeedback`, `TouchableHighlight` and `TouchableOpacity`)  include additional code to detect focus changes and properly style the components when focused. It also ensures that the appropriate actions are triggered when the user interacts with the `Touchable` views using the TV remote control.
+
+Specifically, the `onFocus` event is fired when the `Touchable` view gains focus, and the `onBlur` event is fired when the view loses focus. This enables you to apply unique styling or logic when the component is in the focused state that doesn’t come out of the box with core React Native.
+
+Additionally the `onPress` method has been modified to be triggered when the user selects the `Touchable` by pressing the "select" button on the TV remote (the center button on the Apple TV remote or the center button on the Android TV D-Pad) and the `onLongPress` event is executed twice when the "select" button is held down for a certain duration.
+
+### 3. [Pressable](https://github.com/react-native-tvos/react-native-tvos?tab=readme-ov-file#code-changes)
+
+Like `Touchable`, the `Pressable` component been enhanced to allow it to accept the `onFocus` and `onBlur` props.
+Similar to the ‘`pressed`’ state that is triggered when a user presses the component on a touchscreen, the `react-native-tvos` `Pressable` component introduces a focused state that becomes true when the component is focused on the TV screen. 
+
+Here’s an example when using the `Pressable` and `Touchable` components from React Native core and they do not accept / execute the `onFocus` and `onBlur` props:
+
+![Pressable and Touchable components from React Native core](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/muduyfcotb2o8fzq0joj.gif)
+
+Using the same `Pressable` and `Touchable` components from `react-native-tvos` they accept and execute the `onFocus` and `onBlur` props:
+
+![Pressable and Touchable components from react-native-tvos](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/7yti7zw2kmrs97mzidf3.gif)
+
+### 4. `hasTVPreferredFocus` prop
+
+Some React Native components have the `hasTVPreferredFocus` prop, which helps you prioritise focus. If set to true, `hasTVPreferredFocus` will force the focus to that element. According to the React Native docs these are the current components that accept the prop:
+
+![React Native docs](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/kcpglv6quh2vj7wpjuat.png)
+
+However, if you are using react-native-tvOS, there are a lot more components that accept this prop:
+
+```jsx
+<View hasTVPreferredFocus />
+<Pressable hasTVPreferredFocus />
+<TouchableHighlight hasTVPreferredFocus />
+<TouchableOpacity hasTVPreferredFocus />
+<TextInput hasTVPreferredFocus />
+<Button hasTVPreferredFocus />
+<TVFocusGuideView hasTVPreferredFocus />
+<TouchableNativeFeedback hasTVPreferredFocus />
+<TVTextScrollView hasTVPreferredFocus />
+<TouchableWithoutFeedback hasTVPreferredFocus />
+```
+
+Lets look at an example:
+
+- Setting the `hasTVPreferredFocus` prop to true for `Pressable` 2 causes focus be on `Pressable` 2
+- Changing it to be true when we are on `Pressable` 3 causes focus to move to `Pressable` 3 
+
+![hasTVPreferredFocus demo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/jjnhjue5awj8ei8n1wfy.gif)
+
+### 5. `nextFocusDirection` prop
+
+The `nextFocusDirection` prop designates the next Component to receive focus when the user navigates in the specified direction helping you handle focus navigation. When using `react-native-tvos`, this prop is accepted by the same components that accept the `hasTVPreferredFocus` prop (`View, TouchableHighlight, Pressable, TouchableOpacity, TextInput, TVFocusGuideView, TouchableNativeFeedback, Button`). Lets look at an example: 
+
+```
+nextFocusDown={pressableRef3.current}
+nextFocusRight={pressableRef5.current}>
+```
+
+- Setting the `nextFocusDown` prop to `Pressable` 3 causes focus to move to `Pressable` 3 when the focus moves down
+- Setting the `nextFocusRight` prop to Pressable 5 causes focus to move to `Pressable` 5 when the focus moves right
+
+![nextFocusDown demo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/thpinp3knamg6zodlx0i.gif)
+
+## Conclusion
+
+When it comes to handling focus management, there is no one-size-fits-all solution for React Native TV apps. The approach ultimately depends on the specific needs and requirements of your project. While the `react-native-tvos` provides a useful cross-device abstractions, you may have to adopt platform-specific solutions to handle common fragmentation issues across SmartTV platforms. 
+
+Take the time to explore these various focus management solutions so that you can deliver an intuitive focus handling experience for your users, regardless of the SmartTV platform they are using.
+
+## Related resources
+
+- https://dev.to/amazonappdev/tv-navigation-in-react-native-a-guide-to-using-tvfocusguideview-302i
+- https://medium.com/xite-engineering/revolutionizing-focus-management-in-tv-applications-with-react-native-10ba69bd90
+- https://reactnative.dev/docs/0.72/building-for-tv
